@@ -312,7 +312,7 @@ window.Cloud = (function () {
     var local = ts(DB.meta.updatedAt);
     if (incoming <= local) return;               /* 不是更新的版本，忽略 */
     if (DB.meta.dirty) {                          /* 本机有未同步改动：不覆盖，提示用户 */
-      if (typeof toast === 'function') toast('其他设备有更新，点“🔄 立即同步”获取');
+      if (typeof toast === 'function') toast('其他设备有更新，点“立即同步”获取');
       return;
     }
     applyRemoteSnapshot(rec.payload);
