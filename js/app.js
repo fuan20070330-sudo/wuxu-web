@@ -28,9 +28,8 @@ function fmt(days) {
   return '剩 ' + days + ' 天';
 }
 function fallbackIcon(item) {
-  if (item.icon) return item.icon;
-  var map = { '数码': '🔌', '文具': '🖊️', '药品': '💊', '食品': '🥫', '日用品': '🧴', '工具': '🪛', '衣物': '👕', '证件票据': '🪪', '运动户外': '🏸', '小家电': '💨', '其他': '📦' };
-  return map[item.category] || '📦';
+  var map = { '数码': '数', '文具': '文', '药品': '药', '食品': '食', '日用品': '日', '工具': '工', '厨具': '厨', '衣物': '衣', '证件票据': '证', '运动户外': '运', '小家电': '电', '其他': '物' };
+  return map[item.category] || '物';
 }
 
 /* ---------- 数据存储 ---------- */
@@ -168,7 +167,7 @@ function updateExpiryBadge() {
   var n = countUrgent();
   var nav = $('#mainnav .nav-item[data-view="expiry"] span');
   if (!nav) return;
-  nav.textContent = n > 0 ? '⏰' : '⏰';
+  nav.textContent = n > 0 ? '' : '';
   nav.setAttribute('data-badge', n > 0 ? String(n) : '');
 }
 function countUrgent() {
@@ -197,7 +196,7 @@ function renderHome() {
 
   var html = '';
   html += '<div class="hero-capture" onclick="openCapture()">';
-  html += '  <div class="big">📷</div>';
+  html += '  <div class="big" aria-hidden="true"></div>';
   html += '  <div><div class="t1">拍一下，管理生活</div><div class="t2">物品入库 / 保质期 / 记一餐 · 一次拍照智能识别</div></div>';
   html += '</div>';
 
@@ -207,9 +206,9 @@ function renderHome() {
   html += '<div class="stat"><div class="num">' + st.kcal + '</div><div class="lbl">今日摄入 kcal</div></div>';
   html += '</div>';
 
-  html += '<div class="card"><h3>⏰ 临期提醒 <span class="link" onclick="go(\'expiry\')">全部 →</span></h3>';
+  html += '<div class="card"><h3>临期提醒 <span class="link" onclick="go(\'expiry\')">全部 →</span></h3>';
   if (exp.length === 0) {
-    html += '<div class="muted">暂无临期物品，继续保持 ✅</div>';
+    html += '<div class="muted">暂无临期物品，继续保持</div>';
   } else {
     exp.forEach(function (i) {
       var d = daysUntil(i.expireDate);
@@ -222,22 +221,22 @@ function renderHome() {
   }
   html += '</div>';
 
-  html += '<div class="card"><h3>📦 最近入库 <span class="link" onclick="go(\'items\')">物品库 →</span></h3>';
+  html += '<div class="card"><h3>最近入库 <span class="link" onclick="go(\'items\')">物品库 →</span></h3>';
   if (recent.length === 0) { html += '<div class="muted">还没有物品，点上方“拍一下”入库吧</div>'; }
   else {
     recent.forEach(function (i) {
       html += '<div class="expiry-row" style="padding:7px 0;border-bottom:1px solid var(--line)" onclick="openItemDetail(\'' + i.id + '\')">';
       html += '  <div class="pic">' + fallbackIcon(i) + '</div>';
-      html += '  <div class="meta"><div class="name">' + esc(i.name) + '</div><div class="sub">📍 ' + esc(i.location || '未设置位置') + '</div></div>';
+      html += '  <div class="meta"><div class="name">' + esc(i.name) + '</div><div class="sub">' + esc(i.location || '未设置位置') + '</div></div>';
       html += '  <div class="right"><span class="tag cat">' + esc(i.category || '其他') + '</span></div>';
       html += '</div>';
     });
   }
   html += '</div>';
 
-  html += '<div class="card"><h3>🍱 今日饮食 <span class="link" onclick="go(\'diet\')">详情 →</span></h3>';
+  html += '<div class="card"><h3>今日饮食 <span class="link" onclick="go(\'diet\')">详情 →</span></h3>';
   var pct = Math.min(100, Math.round(st.kcal / st.target * 100));
-  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + st.target + ' kcal</span><span>' + (st.kcal > st.target ? '已超标 ⚠️' : '进度 ' + pct + '%') + '</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + st.target + ' kcal</span><span>' + (st.kcal > st.target ? '已超标 ' : '进度 ' + pct + '%') + '</span></div>';
   html += '<div class="kcal-progress"><i style="width:' + pct + '%" class="' + (st.kcal > st.target ? 'over' : '') + '"></i></div>';
   html += '</div>';
 
@@ -265,7 +264,7 @@ function renderItems() {
   activeItems().forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
 
   var html = '<div class="card" style="padding:12px">';
-  html += '<div class="searchbar"><input id="itemSearch" placeholder="🔍 搜索名称 / 位置 / 分类…" value="' + esc(itemQ) + '" oncompositionstart="itemSearchComposition(true)" oncompositionend="itemSearchComposition(false, this.value)" oninput="itemSearch(this.value)" /></div>';
+  html += '<div class="searchbar"><input id="itemSearch" placeholder="搜索名称 / 位置 / 分类…" value="' + esc(itemQ) + '" oncompositionstart="itemSearchComposition(true)" oncompositionend="itemSearchComposition(false, this.value)" oninput="itemSearch(this.value)" /></div>';
   html += '<div class="chips">';
   cats.forEach(function (c) {
     html += '<button class="chip' + (c === itemCat ? ' active' : '') + '" onclick="itemCatFilter(\'' + c + '\')">' + esc(c) + '</button>';
@@ -280,7 +279,7 @@ function renderItems() {
 function itemResultsHTML(list) {
   var html = '';
   if (list.length === 0) {
-    html += '<div class="empty"><div class="ic">📭</div><p>没有找到相关物品</p></div>';
+    html += '<div class="empty"><div class="ic"></div><p>没有找到相关物品</p></div>';
   } else {
     html += '<div class="item-grid">';
     list.forEach(function (i) { html += itemCardHTML(i); });
@@ -331,7 +330,7 @@ function itemCardHTML(i) {
   h += '<div class="pic">' + fallbackIcon(i) + '</div>';
   h += '<div class="meta">';
   h += '<div class="name">' + esc(i.name) + '</div>';
-  h += '<div class="sub">📍 ' + esc(i.location || '未设置位置') + (i.count > 1 ? ' · ×' + i.count : '') + '</div>';
+  h += '<div class="sub">' + esc(i.location || '未设置位置') + (i.count > 1 ? ' · ×' + i.count : '') + '</div>';
   h += '<div class="foot">';
   h += '<span class="tag cat">' + esc(i.category || '其他') + '</span>';
   if (i.kind === 'food') h += '<span class="tag">食品</span>';
@@ -358,8 +357,8 @@ function renderExpiry() {
   var g = expiryGroups();
   var html = '<div class="card" style="padding:12px">';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
-  html += '<div><b style="font-size:16px">⏰ 保质期提醒</b><div class="muted">临期分级 · 及时处理不浪费</div></div>';
-  html += '<button class="btn btn-primary btn-sm" onclick="openCapture(\'expiry\')">📷 扫描包装</button>';
+  html += '<div><b style="font-size:16px">保质期提醒</b><div class="muted">临期分级 · 及时处理不浪费</div></div>';
+  html += '<button class="btn btn-primary btn-sm" onclick="openCapture(\'expiry\')">扫描包装</button>';
   html += '</div></div>';
 
   var groups = [
@@ -370,7 +369,7 @@ function renderExpiry() {
   ];
   var total = g.expired.length + g.soon7.length + g.soon30.length + g.normal.length;
   if (total === 0) {
-    html += '<div class="empty"><div class="ic">🎉</div><p>还没有食品/药品记录，点“扫描包装”拍一个吧</p></div>';
+    html += '<div class="empty"><div class="ic"></div><p>还没有食品/药品记录，点“扫描包装”拍一个吧</p></div>';
   } else {
     groups.forEach(function (gr) {
       var arr = g[gr.key];
@@ -383,13 +382,13 @@ function renderExpiry() {
         html += '<div class="expiry-row">';
         html += '<div class="pic">' + fallbackIcon(i) + '</div>';
         html += '<div class="meta"><div class="name">' + esc(i.name) + (i.count > 1 ? ' <span class="muted">×' + i.count + '</span>' : '') + '</div>';
-        html += '<div class="sub">📍 ' + esc(i.location || '') + (i.storage ? ' · ' + esc(i.storage) : '') + '</div></div>';
+        html += '<div class="sub">' + esc(i.location || '') + (i.storage ? ' · ' + esc(i.storage) : '') + '</div></div>';
         html += '<div class="right">' + daysChip(d) + '<div class="muted" style="margin-top:2px">' + esc(i.expireDate) + '</div></div>';
         html += '</div>';
         html += '<div class="actions">';
-        html += '<button class="btn btn-sm btn-primary" onclick="expireAction(\'' + i.id + '\',\'' + (isFood ? 'eat' : 'use') + '\')">' + (isFood ? '✅ 已食用' : '✅ 已用完') + '</button>';
-        html += '<button class="btn btn-sm btn-danger" onclick="expireAction(\'' + i.id + '\',\'discard\')">🗑 已丢弃</button>';
-        html += '<button class="btn btn-sm btn-ghost" onclick="openItemDetail(\'' + i.id + '\')">✎ 编辑</button>';
+        html += '<button class="btn btn-sm btn-primary" onclick="expireAction(\'' + i.id + '\',\'' + (isFood ? 'eat' : 'use') + '\')">' + (isFood ? '已食用' : '已用完') + '</button>';
+        html += '<button class="btn btn-sm btn-danger" onclick="expireAction(\'' + i.id + '\',\'discard\')">已丢弃</button>';
+        html += '<button class="btn btn-sm btn-ghost" onclick="openItemDetail(\'' + i.id + '\')">编辑</button>';
         html += '</div></div>';
       });
     });
@@ -447,7 +446,7 @@ function openItemForm(item) {
   var locs = listLocations();
   var opt = locs.map(function (l) { return '<option value="' + esc(l) + '"></option>'; }).join('');
 
-  var html = modalHead(isNew ? '📦 物品入库' : '✎ 编辑物品');
+  var html = modalHead(isNew ? '物品入库' : '编辑物品');
   html += '<div class="field"><label>名称 *</label><input id="f_name" placeholder="例如：无线鼠标" value="' + esc(it.name) + '" /></div>';
   html += '<div class="form-grid">';
   html += '<div class="field"><label>类型</label><select id="f_kind" onchange="toggleKindFields()">';
@@ -464,7 +463,7 @@ function openItemForm(item) {
   html += '<div id="expiryFields" style="display:none">';
   html += '<div class="form-grid">';
   html += '<div class="field"><label>保存条件</label><select id="f_storage">';
-  var storages = ['常温避光', '冷藏 2-6℃', '冷冻', '阴凉干燥', '开封后冷藏'];
+  var storages = ['常温避光', '冷藏 2-6', '冷冻', '阴凉干燥', '开封后冷藏'];
   storages.forEach(function (s) { html += '<option' + (s === it.storage ? ' selected' : '') + '>' + s + '</option>'; });
   html += '</select></div>';
   html += '<div class="field"><label>到期日</label><input id="f_expire" type="date" value="' + esc(it.expireDate || '') + '" /></div>';
