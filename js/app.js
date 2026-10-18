@@ -147,6 +147,7 @@ function currentView() {
 }
 function render() {
   var v = currentView();
+  document.body.setAttribute('data-view', v);
   var map = {
     home: renderHome,
     items: renderItems,
