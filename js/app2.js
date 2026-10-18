@@ -2,10 +2,10 @@
    物序 web 演示原型 —— 饮食 / 我的 / 拍照流程（第 1 部分）
    ========================================================= */
 var MEALS = [
-  { key: 'breakfast', label: '早餐', icon: '🌅' },
-  { key: 'lunch', label: '午餐', icon: '☀️' },
-  { key: 'dinner', label: '晚餐', icon: '🌙' },
-  { key: 'snack', label: '加餐', icon: '🍪' }
+  { key: 'breakfast', label: '早餐', icon: '' },
+  { key: 'lunch', label: '午餐', icon: '' },
+  { key: 'dinner', label: '晚餐', icon: '' },
+  { key: 'snack', label: '加餐', icon: '' }
 ];
 function mealLabel(key) { for (var i = 0; i < MEALS.length; i++) if (MEALS[i].key === key) return MEALS[i].label; return key; }
 
@@ -23,8 +23,8 @@ function renderDiet() {
   var cCal = Math.max(0, 100 - pCal - fCal);
 
   var html = '<div class="card">';
-  html += '<h3>🍱 今日饮食 <span class="muted">' + today + '</span></h3>';
-  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + target + ' kcal</span><span>' + (kcal > target ? '已超标 ⚠️' : '剩余 ' + Math.max(0, target - kcal) + ' kcal') + '</span></div>';
+  html += '<h3>今日饮食 <span class="muted">' + today + '</span></h3>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + target + ' kcal</span><span>' + (kcal > target ? '已超标 ' : '剩余 ' + Math.max(0, target - kcal) + ' kcal') + '</span></div>';
   html += '<div class="kcal-progress"><i style="width:' + pct + '%" class="' + (kcal > target ? 'over' : '') + '"></i></div>';
   html += '<div class="nutri-row">';
   html += '<div class="nutri"><div class="v">' + Math.round(kcal) + '</div><div class="k">千卡</div></div>';
@@ -33,34 +33,34 @@ function renderDiet() {
   html += '<div class="nutri"><div class="v">' + Math.round(c) + 'g</div><div class="k">碳水 ' + cCal + '%</div></div>';
   html += '</div>';
   html += '<div style="display:flex;gap:8px;margin-top:6px">';
-  html += '<button class="btn btn-primary" style="flex:1" onclick="openCapture(\'diet\')">📷 拍照记一餐</button>';
-  html += '<button class="btn btn-ghost" style="flex:1" onclick="openManualDiet()">✍️ 手动记一笔</button>';
+  html += '<button class="btn btn-primary" style="flex:1" onclick="openCapture(\'diet\')">拍照记一餐</button>';
+  html += '<button class="btn btn-ghost" style="flex:1" onclick="openManualDiet()">手动记一笔</button>';
   html += '</div>';
   html += '</div>';
 
-  html += '<div class="card"><h3>📈 近 7 日摄入</h3>' + trendHTML(target) + '</div>';
+  html += '<div class="card"><h3>近 7 日摄入</h3>' + trendHTML(target) + '</div>';
 
   MEALS.forEach(function (meal) {
     var arr = m[meal.key] || [];
     html += '<div class="meal-sec">';
-    html += '<div class="meal-head"><span>' + meal.icon + ' ' + meal.label + '</span><span class="kcal">' + sumKcal(arr) + ' kcal</span></div>';
+    html += '<div class="meal-head"><span>' + meal.label + '</span><span class="kcal">' + sumKcal(arr) + ' kcal</span></div>';
     if (arr.length === 0) {
       html += '<div class="muted" style="padding:4px 2px 10px">还没有记录</div>';
     } else {
       arr.forEach(function (d) {
         html += '<div class="diet-row">';
-        html += '<div class="pic">' + (d.icon || '🍽️') + '</div>';
+        html += '<div class="pic">' + ((d.name || '餐').slice(0, 1)) + '</div>';
         html += '<div class="meta"><div class="nm">' + esc(d.name) + (d.isEstimated ? ' <span class="tag">AI估算</span>' : '') + '</div>';
         html += '<div class="sb">' + (d.portion || '') + (d.tip ? ' · ' + esc(d.tip) : '') + '</div></div>';
         html += '<div class="kcal">' + d.kcal + ' <span class="muted">kcal</span></div>';
-        html += '<button class="btn btn-sm btn-danger" onclick="dietDelete(\'' + meal.key + '\',\'' + d.id + '\')">✕</button>';
+        html += '<button class="btn btn-sm btn-danger" onclick="dietDelete(\'' + meal.key + '\',\'' + d.id + '\')">×</button>';
         html += '</div>';
       });
     }
     html += '</div>';
   });
 
-  html += '<div class="advice-card"><div class="title">💡 今日健康小建议</div><ul>' + adviceItems(kcal, p, f, c, target) + '</ul><div class="disclaimer">以上为生活化建议，仅供参考，不构成医疗建议。</div></div>';
+  html += '<div class="advice-card"><div class="title">今日健康小建议</div><ul>' + adviceItems(kcal, p, f, c, target) + '</ul><div class="disclaimer">以上为生活化建议，仅供参考，不构成医疗建议。</div></div>';
 
   $('#view').innerHTML = html;
 }
@@ -112,7 +112,7 @@ function dietDelete(meal, id) {
 
 /* 手动记一笔 */
 function openManualDiet() {
-  var html = modalHead('✍️ 手动记一笔');
+  var html = modalHead('手动记一笔');
   html += '<div class="field"><label>食物名称 *</label><input id="md_name" placeholder="如：苹果（1 个）" /></div>';
   html += '<div class="form-grid">';
   html += '<div class="field"><label>热量（千卡）*</label><input id="md_kcal" type="number" min="0" placeholder="如：95" /></div>';
@@ -141,7 +141,7 @@ function renderProfile() {
   var p = DB.profile;
   var s = DB.settings;
   var html = accountCardHTML();
-  html += '<div class="card"><h3>🧑‍⚕️ 健康档案</h3>';
+  html += '<div class="card"><h3>健康档案</h3>';
   html += '<div class="form-grid">';
   html += '<div class="field"><label>性别</label><select id="p_gender" onchange="saveProfile()">';
   html += '<option value="男"' + (p.gender === '男' ? ' selected' : '') + '>男</option>';
@@ -160,28 +160,21 @@ function renderProfile() {
   goals.forEach(function (g) { html += '<option' + (p.goal === g ? ' selected' : '') + '>' + g + '</option>'; });
   html += '</select></div>';
   html += '</div>';
-  html += '<button class="btn btn-ghost btn-block" onclick="recalcTarget()">🔄 按档案重新计算每日目标</button>';
+  html += '<button class="btn btn-ghost btn-block" onclick="recalcTarget()">按档案重新计算每日目标</button>';
   html += '<div class="muted" id="targetMeta" style="margin-top:8px"></div>';
   html += '</div>';
 
-  html += '<div class="card"><h3>⏰ 提醒设置</h3>';
+  html += '<div class="card"><h3>提醒设置</h3>';
   html += '<div class="about-line"><b>提前提醒天数：</b>' + (s.remindDays || [30, 7, 3]).join(' / ') + ' 天</div>';
   html += '<label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="p_notify"' + (s.notify ? ' checked' : '') + ' onchange="updateNotify(this.checked)" /> 开启临期提醒（页面角标 + 列表高亮）</label>';
   html += '</div>';
 
-  html += '<div class="card"><h3>🗂 数据管理</h3>';
+  html += '<div class="card"><h3>数据管理</h3>';
   html += '<div style="display:flex;gap:8px">';
-  html += '<button class="btn btn-ghost" style="flex:1" onclick="exportData()">⬇️ 导出数据(JSON)</button>';
-  html += '<button class="btn btn-danger" style="flex:1" onclick="resetDemo()">♻️ 重置演示数据</button>';
+  html += '<button class="btn btn-ghost" style="flex:1" onclick="exportData()">导出数据(JSON)</button>';
+  html += '<button class="btn btn-danger" style="flex:1" onclick="resetDemo()">重置演示数据</button>';
   html += '</div></div>';
 
-  html += '<div class="card"><h3>ℹ️ 关于本项目</h3>';
-  html += '<div class="about-line"><b>产品：</b>物序 · 一站式生活数字化助手</div>';
-  html += '<div class="about-line"><b>赛道：</b>移动与网络应用开发</div>';
-  html += '<div class="about-line"><b>形态：</b>本页为“网页版交互原型”，识别结果当前为本地模拟（演示模式）。</div>';
-  html += '<div class="about-line"><b>真实接入：</b>把照片上传后端后，经“意图路由”调用视觉大模型 / OCR，返回结构与 docs/04 一致，即可替换模拟数据。</div>';
-  html += '<div class="disclaimer">健康建议仅供参考，不构成医疗建议。数据保存在本机浏览器 localStorage。</div>';
-  html += '</div>';
 
   $('#view').innerHTML = html;
   var ct = computeTarget(p);
@@ -223,20 +216,20 @@ function resetDemo() {
 /* ---------- 拍照识别流程 ---------- */
 function openCapture(intent) {
   if (intent) { pickSource(intent); return; }
-  var html = modalHead('📷 拍一下，智能识别');
+  var html = modalHead('拍一下，智能识别');
   html += '<div class="muted" style="margin-bottom:12px">选择识别类型，系统将调用（演示为模拟）视觉大模型理解图片内容：</div>';
   html += '<div class="intent-grid">';
-  html += '<button class="intent" onclick="pickSource(\'item\')"><div class="ic">📦</div><div class="nm">物品入库</div><div class="ds">识别分类并记录位置</div></button>';
-  html += '<button class="intent" onclick="pickSource(\'expiry\')"><div class="ic">🏷️</div><div class="nm">记录保质期</div><div class="ds">OCR 日期 + 到期提醒</div></button>';
-  html += '<button class="intent" onclick="pickSource(\'diet\')"><div class="ic">🍱</div><div class="nm">记一餐</div><div class="ds">识别菜品并估算热量</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'item\')"><div class="ic">01</div><div class="nm">物品入库</div><div class="ds">识别分类并记录位置</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'expiry\')"><div class="ic">02</div><div class="nm">记录保质期</div><div class="ds">OCR 日期 + 到期提醒</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'diet\')"><div class="ic">03</div><div class="nm">记一餐</div><div class="ds">识别菜品并估算热量</div></button>';
   html += '</div>';
   openModal(html, true);
 }
 function pickSource(intent) {
-  var html = modalHead('📷 选择图片来源');
+  var html = modalHead('选择图片来源');
   html += '<div style="display:flex;flex-direction:column;gap:10px">';
-  html += '<button class="btn btn-primary" onclick="startPick(\'' + intent + '\',\'camera\')">📷 拍照（调用摄像头）</button>';
-  html += '<button class="btn btn-ghost" onclick="startPick(\'' + intent + '\',\'album\')">🖼️ 从相册选择</button>';
+  html += '<button class="btn btn-primary" onclick="startPick(\'' + intent + '\',\'camera\')">拍照（调用摄像头）</button>';
+  html += '<button class="btn btn-ghost" onclick="startPick(\'' + intent + '\',\'album\')">从相册选择</button>';
   html += '</div>';
   html += '<div class="muted" style="margin-top:12px">浏览器会请求相机/文件权限；本演示选择图片后进入“AI 识别（模拟）”。</div>';
   openModal(html, true);
@@ -300,7 +293,7 @@ function produce(dataUrl, intent) {
       toast('AI 未返回结果，已使用演示数据');
       return produceMock(dataUrl, intent);
     }
-    if (usedAI) toast('AI 识别完成 ✅');
+    if (usedAI) toast('AI 识别完成 ');
     if (intent === 'expiry') openExpiryConfirm(dataUrl, res);
     else if (intent === 'diet') openDietConfirm(dataUrl, res.dishes || res);
     else openItemConfirm(dataUrl, res.items || res);
@@ -335,7 +328,7 @@ function openItemConfirm(preview, cands) {
   window.pendingItemCands = cands;
   var locs = listLocations();
   var opt = locs.map(function (l) { return '<option value="' + esc(l) + '"></option>'; }).join('');
-  var html = modalHead('📦 物品识别结果');
+  var html = modalHead('物品识别结果');
   html += '<div class="muted" style="margin-bottom:8px">演示识别到 ' + cands.length + ' 件物品，请核对后入库（名称/分类可修改）：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   cands.forEach(function (c, i) {
@@ -362,8 +355,8 @@ function openItemConfirm(preview, cands) {
     html += '<button class="btn btn-sm btn-danger" onclick="removeCand(' + i + ')">移除这项</button>';
     html += '</div>';
   });
-  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'item\')">🔍 识别不准？重新细看</button>';
-  html += '<button class="btn btn-primary btn-block" onclick="saveItemConfirm()">✅ 确认入库 ' + cands.length + ' 件</button>';
+  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'item\')">识别不准？重新细看</button>';
+  html += '<button class="btn btn-primary btn-block" onclick="saveItemConfirm()">确认入库 ' + cands.length + ' 件</button>';
   openModal(html, true);
 }
 function removeCand(i) {
@@ -393,7 +386,7 @@ function saveItemConfirm() {
 /* ---------- 保质期识别结果确认 ---------- */
 function openExpiryConfirm(preview, e) {
   e = e || MOCK.recognizeExpiry();
-  var html = modalHead('🏷️ 保质期识别结果');
+  var html = modalHead('保质期识别结果');
   html += '<div class="muted" style="margin-bottom:8px">OCR + 大模型识别（演示），请核对字段后保存，系统将自动开启到期提醒：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   html += '<div class="advice-card" style="margin-bottom:12px"><b>识别结论：</b>' + esc(e.name) + '，预计到期日 ' + esc(e.expireDate) + '（' + (e.daysLeft < 0 ? '已过期' + Math.abs(e.daysLeft) + ' 天' : '剩 ' + e.daysLeft + ' 天') + '）</div>';
@@ -404,14 +397,14 @@ function openExpiryConfirm(preview, e) {
   html += '<option value="medicine"' + (e.kind === 'medicine' ? ' selected' : '') + '>药品</option>';
   html += '</select></div>';
   html += '<div class="field"><label>保存条件</label><select id="ex_storage">';
-  var storages = ['常温避光', '冷藏 2-6℃', '冷冻', '阴凉干燥', '开封后冷藏'];
+  var storages = ['常温避光', '冷藏 2-6', '冷冻', '阴凉干燥', '开封后冷藏'];
   storages.forEach(function (s) { html += '<option' + (s === e.storage ? ' selected' : '') + '>' + s + '</option>'; });
   html += '</select></div>';
   html += '<div class="field"><label>到期日</label><input id="ex_expire" type="date" value="' + esc(e.expireDate) + '" /></div>';
   html += '<div class="field"><label>数量</label><input id="ex_count" type="number" min="1" value="' + (e.count || 1) + '" /></div>';
   html += '</div>';
-  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'expiry\')">🔍 日期不准？重新细看</button>';
-  html += '<button class="btn btn-primary btn-block" onclick="saveExpiryConfirm()">✅ 保存并开启提醒</button>';
+  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'expiry\')">日期不准？重新细看</button>';
+  html += '<button class="btn btn-primary btn-block" onclick="saveExpiryConfirm()">保存并开启提醒</button>';
   openModal(html, true);
 }
 function saveExpiryConfirm() {
@@ -443,7 +436,7 @@ function openDietConfirm(preview, dishes) {
   dishes = (dishes && dishes.length) ? dishes : MOCK.recognizeDiet();
   window.pendingDishCands = dishes;
   window.dietCands = dishes;
-  var html = modalHead('🍱 拍照记一餐（识别结果）');
+  var html = modalHead('拍照记一餐（识别结果）');
   html += '<div class="muted" style="margin-bottom:8px">识别到 ' + dishes.length + ' 项（演示），可修改菜名 / 份量 / 热量后保存：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   html += '<div class="field"><label>餐次</label><select id="dc_meal">';
@@ -451,7 +444,7 @@ function openDietConfirm(preview, dishes) {
   html += '</select></div>';
   dishes.forEach(function (d, i) {
     html += '<div class="card" id="drow' + i + '" data-idx="' + i + '" style="padding:12px;margin-bottom:10px">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>' + (d.icon || '🍽️') + ' ' + esc(d.name) + '</b><span class="tag">AI估算</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>' + esc(d.name) + '</b><span class="tag">AI估算</span></div>';
     html += '<div class="form-grid">';
     html += '<div class="field full"><label>菜名</label><input class="dname" value="' + esc(d.name) + '" />';
     var dishCands = (d.candidates && d.candidates.length) ? d.candidates : [];
@@ -472,8 +465,8 @@ function openDietConfirm(preview, dishes) {
     html += '<button class="btn btn-sm btn-danger" onclick="removeDrow(' + i + ')">移除这项</button>';
     html += '</div>';
   });
-  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'diet\')">🔍 菜品不准？重新细看</button>';
-  html += '<button class="btn btn-primary btn-block" onclick="saveDietConfirm()">✅ 保存 ' + dishes.length + ' 项</button>';
+  html += '<button class="btn btn-ghost btn-block" onclick="reRecognize(\'diet\')">菜品不准？重新细看</button>';
+  html += '<button class="btn btn-primary btn-block" onclick="saveDietConfirm()">保存 ' + dishes.length + ' 项</button>';
   openModal(html, true);
 }
 function removeDrow(i) {
@@ -510,7 +503,7 @@ function reRecognize(intent) {
   var originalIntent = cap.intent || intent || 'item';
   showAnalyzing(cap.dataUrl, true);
   AI.recognize(originalIntent, cap.dataUrl, { precise: true }).then(function (res) {
-    setAiStatus(true); toast('精准重看完成 ✅');
+    setAiStatus(true); toast('精准重看完成 ');
     if (originalIntent === 'expiry') openExpiryConfirm(cap.dataUrl, res);
     else if (originalIntent === 'diet') openDietConfirm(cap.dataUrl, res.dishes || res);
     else openItemConfirm(cap.dataUrl, res.items || res);
@@ -537,24 +530,24 @@ cloudAuto();
 function accountCardHTML() {
   var cfgReady = (typeof Cloud !== 'undefined') && Cloud.isReady();
   var logged = cfgReady && Cloud.isLoggedIn();
-  var h = '<div class="card"><h3>👤 账号与云同步</h3>';
+  var h = '<div class="card"><h3>账号与云同步</h3>';
   if (!cfgReady) {
     h += '<div class="muted" style="margin-bottom:10px">云端尚未配置：账号与多端同步未启用。请在 <b>web/config.js</b> 填入 Supabase 的 URL 与 anon key（步骤见 docs/09）。</div>';
     h += '<div class="actions"><button class="btn btn-sm btn-ghost" onclick="toast(\'请先填写 web/config.js\')">配置说明</button></div>';
   } else if (!logged) {
     h += '<div class="muted" style="margin-bottom:10px">登录后数据会自动备份到云端，并可在多台设备间同步。<b>不登录也能拍照识别</b>（体验模式），数据仅保存在本机。</div>';
-    h += '<button class="btn btn-primary btn-block" onclick="openAuthModal()">🔐 登录 / 注册</button>';
+    h += '<button class="btn btn-primary btn-block" onclick="openAuthModal()">登录 / 注册</button>';
   } else {
-    h += '<div class="about-line"><b>状态：</b>✅ 已登录</div>';
+    h += '<div class="about-line"><b>状态：</b>已登录</div>';
     h += '<div class="about-line"><b>账号：</b>' + esc(Cloud.currentEmail()) + '</div>';
     h += '<div class="about-line"><b>同步：</b>本地改动后自动上传 · 支持手动“立即同步”</div>';
     var rt = (Cloud.realtimeStatus && Cloud.realtimeStatus()) || 'idle';
-    var rtText = rt === 'connected' ? '🟢 WebSocket 实时同步已连接'
-      : (rt === 'connecting' ? '🟡 正在连接实时通道…'
-      : (rt === 'fallback' ? '🟠 轮询兜底（30 秒/次）' : '⚪ 未连接（登录后自动连接）'));
+    var rtText = rt === 'connected' ? 'WebSocket 实时同步已连接'
+      : (rt === 'connecting' ? '正在连接实时通道…'
+      : (rt === 'fallback' ? '轮询兜底（30 秒/次）' : '未连接（登录后自动连接）'));
     h += '<div class="about-line"><b>实时：</b>' + rtText + '</div>';
     h += '<div class="actions">';
-    h += '<button class="btn btn-sm btn-primary" onclick="cloudSyncNow(true)">🔄 立即同步</button>';
+    h += '<button class="btn btn-sm btn-primary" onclick="cloudSyncNow(true)">立即同步</button>';
     h += '<button class="btn btn-sm btn-ghost" onclick="cloudLogout()">退出登录</button>';
     h += '</div>';
   }
@@ -564,7 +557,7 @@ function accountCardHTML() {
 
 function openAuthModal() {
   if (typeof Cloud === 'undefined' || !Cloud.isReady()) { toast('请先配置 web/config.js 中的 Supabase 信息'); return; }
-  var html = modalHead('🔐 登录 / 注册');
+  var html = modalHead('登录 / 注册');
   html += '<div class="field"><label>邮箱</label><input id="au_email" type="email" placeholder="you@example.com" /></div>';
   html += '<div class="field"><label>密码（至少 6 位）</label><input id="au_pass" type="password" autocomplete="current-password" placeholder="••••••••" />';
   html += '<label style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:12.5px;color:var(--muted)"><input type="checkbox" id="au_show" onchange="togglePwd()" /> 显示密码</label>';
