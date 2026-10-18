@@ -50,7 +50,7 @@ window.Camera = (function () {
       if (!isSupported()) { reject(new Error('浏览器不支持实时拍照')); return; }
       resolveFn = resolve; rejectFn = reject;
       var html = '';
-      html += '<div class="modal-head"><h2>📷 拍照</h2><button class="modal-close" onclick="Camera.cancel()">×</button></div>';
+      html += '<div class="modal-head"><h2>拍照</h2><button class="modal-close" onclick="Camera.cancel()">×</button></div>';
       html += '<video id="camVideo" autoplay playsinline muted style="width:100%;max-height:52vh;border-radius:12px;background:#0f172a;object-fit:contain"></video>';
       html += '<div class="muted" style="margin:10px 0 14px">把物品或日期区域放进取景框，画面清晰后点击“拍摄”。</div>';
       html += '<div style="display:flex;gap:8px">';
