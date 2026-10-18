@@ -107,7 +107,7 @@ function normalize(intent, p) {
       count: Number(p && p.count) || 1,
       expireDate: expireDate || toISO(new Date()),
       daysLeft,
-      icon: p && p.kind === 'medicine' ? '💊' : '🥫',
+      icon: p && p.kind === 'medicine' ? '' : '',
       note: (p && Array.isArray(p.uncertain_fields) && p.uncertain_fields.length) ? ('待确认字段：' + p.uncertain_fields.join('、')) : '',
       confidence: 0.85,
     };
@@ -115,7 +115,7 @@ function normalize(intent, p) {
   const dishes = Array.isArray(p && p.dishes) ? p.dishes : [];
   return { dishes: dishes.map((x) => ({
     name: String((x && x.name) || '未识别食物'),
-    icon: '🍽️',
+    icon: '',
     kcal: Math.round(Number(x && x.nutrition && x.nutrition.kcal) || 0),
     p: Math.round(Number(x && x.nutrition && x.nutrition.protein_g) || 0),
     f: Math.round(Number(x && x.nutrition && x.nutrition.fat_g) || 0),
