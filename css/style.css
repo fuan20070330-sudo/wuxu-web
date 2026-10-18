@@ -724,3 +724,155 @@ a { color: var(--brand); }
 select option { background: #071426; color: var(--text); }
 input[type="checkbox"] { accent-color: var(--brand-2); }
 :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* =========================================================
+   布局 v2：顶部像素系统栏 + 横向指令标签 + 仪表盘网格
+   ========================================================= */
+body {
+  padding-left: 0 !important;
+  padding-bottom: 0 !important;
+}
+.topbar {
+  position: sticky !important;
+  top: 0 !important;
+  left: auto !important;
+  width: 100% !important;
+  height: 64px !important;
+  padding: 0 20px !important;
+  border-right: none !important;
+  border-bottom: 2px solid var(--line) !important;
+  box-shadow: 0 3px 0 #000 !important;
+  z-index: 100 !important;
+}
+.topbar-inner {
+  max-width: 1440px !important;
+  height: 64px !important;
+  margin: 0 auto !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+.brand {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+.brand-logo { width: 34px !important; height: 34px !important; }
+.brand-text h1 { font-size: 20px !important; letter-spacing: 2px !important; }
+.brand-text p { font-size: 9px !important; }
+.demo-chip { align-self: auto !important; }
+.topbar::after { display: none !important; }
+
+.mainnav {
+  position: sticky !important;
+  top: 64px !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 50px;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px 20px !important;
+  background: #071426 !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: 2px solid var(--line) !important;
+  box-shadow: 0 3px 0 #000 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none;
+  z-index: 90 !important;
+}
+.mainnav::-webkit-scrollbar { display: none; }
+.nav-item {
+  width: auto !important;
+  min-width: 0 !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+.nav-item span { width: auto !important; font-size: 16px !important; }
+.mainnav::after { display: none !important; }
+
+.view {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 22px 24px 48px !important;
+}
+.view::before {
+  content: "COMMAND CENTER // 物序" !important;
+  display: block !important;
+  font-family: var(--pixel) !important;
+  font-size: 10px !important;
+  letter-spacing: 1.5px !important;
+  color: var(--brand) !important;
+  border-bottom: 1px dashed var(--line) !important;
+  padding-bottom: 10px !important;
+  margin-bottom: 18px !important;
+}
+
+@media (min-width: 1000px) {
+  .mainnav::after {
+    display: block !important;
+    content: "SYS.ONLINE" !important;
+    margin-left: auto !important;
+    padding: 0 0 0 14px !important;
+    border-left: 1px dashed var(--line) !important;
+    color: var(--brand) !important;
+    font-family: var(--pixel) !important;
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+    white-space: nowrap;
+  }
+  .view {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    align-items: start !important;
+  }
+  .view::before { grid-column: 1 / -1 !important; }
+  .view > * {
+    grid-column: span 12 !important;
+    margin-bottom: 0 !important;
+  }
+
+  body[data-view="home"] .hero-capture { grid-column: span 7 !important; }
+  body[data-view="home"] .stat-grid {
+    grid-column: span 5 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin: 0 !important;
+  }
+  body[data-view="home"] .stat { height: 100% !important; }
+  body[data-view="home"] .view > .card:nth-child(3) { grid-column: span 7 !important; }
+  body[data-view="home"] .view > .card:nth-child(4) { grid-column: span 5 !important; }
+  body[data-view="home"] .view > .card:nth-child(5) { grid-column: span 12 !important; }
+
+  body[data-view="diet"] .view > .card:nth-child(1) { grid-column: span 7 !important; }
+  body[data-view="diet"] .view > .card:nth-child(2) { grid-column: span 5 !important; }
+  body[data-view="diet"] .meal-sec { grid-column: span 6 !important; }
+  body[data-view="diet"] .advice-card { grid-column: span 12 !important; }
+
+  body[data-view="profile"] .view { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  body[data-view="profile"] .view > .card { grid-column: span 1 !important; }
+  body[data-view="profile"] .view > .card:nth-child(1),
+  body[data-view="profile"] .view > .card:nth-child(5) { grid-column: 1 / -1 !important; }
+
+  body[data-view="items"] .searchbar,
+  body[data-view="items"] .chips,
+  body[data-view="items"] .item-grid { grid-column: 1 / -1 !important; }
+  body[data-view="expiry"] .group-title,
+  body[data-view="expiry"] .card { grid-column: 1 / -1 !important; }
+}
+
+/* 资料页：数据管理卡片占满整行，避免右侧空半格 */
+body[data-view="profile"] .view > .card:nth-child(4) { grid-column: 1 / -1 !important; }
