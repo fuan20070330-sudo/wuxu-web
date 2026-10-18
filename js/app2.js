@@ -177,7 +177,7 @@ function renderProfile() {
 
   html += '<div class="card"><h3>ℹ️ 关于本项目</h3>';
   html += '<div class="about-line"><b>产品：</b>物序 · 一站式生活数字化助手</div>';
-  html += '<div class="about-line"><b>赛道：</b>软件开发方向一（AI 创新应用）</div>';
+  html += '<div class="about-line"><b>赛道：</b>移动与网络应用开发</div>';
   html += '<div class="about-line"><b>形态：</b>本页为“网页版交互原型”，识别结果当前为本地模拟（演示模式）。</div>';
   html += '<div class="about-line"><b>真实接入：</b>把照片上传后端后，经“意图路由”调用视觉大模型 / OCR，返回结构与 docs/04 一致，即可替换模拟数据。</div>';
   html += '<div class="disclaimer">健康建议仅供参考，不构成医疗建议。数据保存在本机浏览器 localStorage。</div>';
