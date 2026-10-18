@@ -136,7 +136,7 @@ function normalize(intent: string, p: any) {
       count: Number(p?.count) || 1,
       expireDate: expireDate || toISO(new Date()),
       daysLeft: daysLeft === null ? 30 : daysLeft,
-      icon: p?.kind === 'medicine' ? '💊' : '🥫',
+      icon: p?.kind === 'medicine' ? '' : '',
       note: Array.isArray(p?.uncertain_fields) && p.uncertain_fields.length ? ('待确认字段：' + p.uncertain_fields.join('、')) : '',
       confidence: 0.85,
     };
@@ -145,7 +145,7 @@ function normalize(intent: string, p: any) {
   return {
     dishes: dishes.map((x: any) => ({
       name: String(x?.name || '未识别食物'),
-      icon: '🍽️',
+      icon: '',
       kcal: Math.round(Number(x?.nutrition?.kcal) || 0),
       p: Math.round(Number(x?.nutrition?.protein_g) || 0),
       f: Math.round(Number(x?.nutrition?.fat_g) || 0),
