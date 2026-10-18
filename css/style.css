@@ -876,3 +876,103 @@ body {
 
 /* 资料页：数据管理卡片占满整行，避免右侧空半格 */
 body[data-view="profile"] .view > .card:nth-child(4) { grid-column: 1 / -1 !important; }
+
+/* =========================================================
+   无 Emoji + 提亮版
+   ========================================================= */
+:root {
+  --bg: #081426;
+  --bg-2: #0b2038;
+  --card: #123154;
+  --card-2: #173d6b;
+  --line: #2d5f96;
+  --line-bright: #4f8fe8;
+  --text: #eaf8ff;
+  --muted: #a8cbe4;
+  --brand: #7af4ff;
+  --brand-2: #3d7dff;
+  --shadow: 4px 4px 0 #02060d;
+}
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(122,244,255,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122,244,255,.07) 1px, transparent 1px);
+}
+.topbar { background: linear-gradient(180deg, #11345c 0%, #0b2038 100%) !important; }
+.mainnav { background: #0d2744 !important; }
+.card, .item-card, .diet-row, .modal { background: var(--card) !important; }
+.stat { background: #143a63 !important; }
+.hero-capture { background: linear-gradient(135deg, #1a4f82 0%, #0e2b4c 100%) !important; }
+.nav-item.active { background: #1a4a7a !important; }
+.demo-chip { background: #0d2744 !important; }
+.item-card .pic, .expiry-row .pic { background: #0d2744 !important; }
+.diet-row .pic { color: var(--brand); }
+.nutri, .intent, .advice-card, .searchbar input, .field input, .field select, .field textarea, .chip, .kcal-progress, .btn-ghost { background: #0d2744 !important; }
+.modal { border-color: var(--line-bright) !important; }
+.toast { background: #0d2744 !important; }
+
+/* 无 Emoji 后的图标位：用文字/像素图形替代 */
+.hero-capture .big {
+  width: 48px;
+  height: 38px;
+  flex: 0 0 auto;
+  position: relative;
+  border: 3px solid var(--brand);
+  background: #0b213c;
+  box-shadow: 3px 3px 0 #000;
+  filter: none !important;
+}
+.hero-capture .big::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--brand);
+  background: #123154;
+  top: 8px;
+  left: 14px;
+}
+.hero-capture .big::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 4px;
+  background: var(--brand);
+  top: -7px;
+  left: 5px;
+}
+.item-card .pic {
+  font-family: var(--pixel);
+  color: var(--brand);
+  font-size: 22px;
+  font-weight: 700;
+}
+.expiry-row .pic {
+  font-family: var(--pixel);
+  color: var(--brand);
+  font-size: 20px;
+  font-weight: 700;
+}
+.diet-row .pic {
+  font-family: var(--pixel);
+  color: var(--brand);
+  font-size: 18px;
+  font-weight: 700;
+}
+.intent .ic {
+  font-family: var(--pixel);
+  color: var(--brand);
+  font-size: 22px;
+  font-weight: 700;
+}
+.empty .ic:empty { display: none; }
+.empty::before {
+  content: "[ EMPTY ]";
+  display: block;
+  margin-bottom: 8px;
+  color: var(--brand);
+  font-family: var(--pixel);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
