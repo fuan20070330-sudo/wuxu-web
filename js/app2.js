@@ -43,13 +43,13 @@ function renderDiet() {
   MEALS.forEach(function (meal) {
     var arr = m[meal.key] || [];
     html += '<div class="meal-sec">';
-    html += '<div class="meal-head"><span>' + meal.label + '</span><span class="kcal">' + sumKcal(arr) + ' kcal</span></div>';
+    html += '<div class="meal-head"><span>' + pixelMealIcon(meal.key) + ' ' + meal.label + '</span><span class="kcal">' + sumKcal(arr) + ' kcal</span></div>';
     if (arr.length === 0) {
       html += '<div class="muted" style="padding:4px 2px 10px">还没有记录</div>';
     } else {
       arr.forEach(function (d) {
         html += '<div class="diet-row">';
-        html += '<div class="pic">' + ((d.name || '餐').slice(0, 1)) + '</div>';
+        html += '<div class="pic">' + pixelFoodIcon(d.name, meal.key) + '</div>';
         html += '<div class="meta"><div class="nm">' + esc(d.name) + (d.isEstimated ? ' <span class="tag">AI估算</span>' : '') + '</div>';
         html += '<div class="sb">' + (d.portion || '') + (d.tip ? ' · ' + esc(d.tip) : '') + '</div></div>';
         html += '<div class="kcal">' + d.kcal + ' <span class="muted">kcal</span></div>';
@@ -219,9 +219,9 @@ function openCapture(intent) {
   var html = modalHead('拍一下，智能识别');
   html += '<div class="muted" style="margin-bottom:12px">选择识别类型，系统将调用（演示为模拟）视觉大模型理解图片内容：</div>';
   html += '<div class="intent-grid">';
-  html += '<button class="intent" onclick="pickSource(\'item\')"><div class="ic">01</div><div class="nm">物品入库</div><div class="ds">识别分类并记录位置</div></button>';
-  html += '<button class="intent" onclick="pickSource(\'expiry\')"><div class="ic">02</div><div class="nm">记录保质期</div><div class="ds">OCR 日期 + 到期提醒</div></button>';
-  html += '<button class="intent" onclick="pickSource(\'diet\')"><div class="ic">03</div><div class="nm">记一餐</div><div class="ds">识别菜品并估算热量</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'item\')"><div class="ic">' + pixelIntentIcon('item') + '</div><div class="nm">物品入库</div><div class="ds">识别分类并记录位置</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'expiry\')"><div class="ic">' + pixelIntentIcon('expiry') + '</div><div class="nm">记录保质期</div><div class="ds">OCR 日期 + 到期提醒</div></button>';
+  html += '<button class="intent" onclick="pickSource(\'diet\')"><div class="ic">' + pixelIntentIcon('diet') + '</div><div class="nm">记一餐</div><div class="ds">识别菜品并估算热量</div></button>';
   html += '</div>';
   openModal(html, true);
 }

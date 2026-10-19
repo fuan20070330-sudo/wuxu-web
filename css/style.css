@@ -976,3 +976,27 @@ body {
   font-size: 11px;
   letter-spacing: 1.5px;
 }
+
+/* 像素 SVG 图标尺寸 */
+.pic svg { display: block; }
+.item-card .pic svg { width: 30px; height: 30px; }
+.expiry-row .pic svg { width: 26px; height: 26px; }
+.diet-row .pic {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d2744;
+  border: 2px solid var(--line);
+}
+.diet-row .pic svg { width: 22px; height: 22px; }
+.meal-head svg { width: 16px; height: 16px; margin-right: 6px; vertical-align: -3px; }
+.intent .ic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+}
+.intent .ic svg { width: 32px; height: 32px; }

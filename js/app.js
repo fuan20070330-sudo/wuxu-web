@@ -27,10 +27,85 @@ function fmt(days) {
   if (days === 0) return '今天到期';
   return '剩 ' + days + ' 天';
 }
-function fallbackIcon(item) {
-  var map = { '数码': '数', '文具': '文', '药品': '药', '食品': '食', '日用品': '日', '工具': '工', '厨具': '厨', '衣物': '衣', '证件票据': '证', '运动户外': '运', '小家电': '电', '其他': '物' };
-  return map[item.category] || '物';
+function pixelSvg(inner) {
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" shape-rendering="crispEdges" aria-hidden="true">' + inner + '</svg>';
 }
+function pixelIcon(kind) {
+  var cut = '#0d2744';
+  var d = '';
+  switch (kind) {
+    case 'device':
+      d = '<rect x="3" y="4" width="18" height="12" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="16" width="4" height="2"/><rect x="7" y="18" width="10" height="2"/><rect x="6" y="7" width="12" height="2" opacity=".45"/>';
+      break;
+    case 'pencil':
+      d = '<rect x="4" y="16" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="10" y="10" width="4" height="4"/><rect x="13" y="7" width="6" height="4"/><rect x="17" y="4" width="3" height="3"/>';
+      break;
+    case 'pill':
+      d = '<rect x="7" y="4" width="10" height="16" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="10" width="10" height="4"/><rect x="9" y="2" width="6" height="2" opacity=".45"/>';
+      break;
+    case 'bottle':
+      d = '<rect x="9" y="3" width="6" height="3"/><rect x="8" y="6" width="8" height="14"/><rect x="10" y="9" width="4" height="6" fill="' + cut + '"/>';
+      break;
+    case 'tool':
+      d = '<rect x="4" y="14" width="6" height="6"/><rect x="9" y="5" width="2" height="10"/><rect x="8" y="3" width="4" height="2"/>';
+      break;
+    case 'pan':
+      d = '<rect x="3" y="9" width="14" height="3"/><rect x="5" y="12" width="10" height="5"/><rect x="16" y="10" width="5" height="2"/>';
+      break;
+    case 'shirt':
+      d = '<rect x="8" y="4" width="8" height="3"/><rect x="5" y="6" width="4" height="4"/><rect x="15" y="6" width="4" height="4"/><rect x="8" y="7" width="8" height="13"/>';
+      break;
+    case 'card':
+      d = '<rect x="3" y="5" width="18" height="14" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="8" width="14" height="2"/><rect x="6" y="12" width="5" height="4"/><rect x="13" y="12" width="4" height="2"/><rect x="13" y="15" width="4" height="2"/>';
+      break;
+    case 'sport':
+      d = '<rect x="9" y="4" width="6" height="2"/><rect x="6" y="6" width="12" height="2"/><rect x="4" y="9" width="16" height="6"/><rect x="6" y="15" width="12" height="2"/><rect x="9" y="17" width="6" height="2"/><rect x="10" y="9" width="4" height="6" fill="' + cut + '"/>';
+      break;
+    case 'plug':
+      d = '<rect x="6" y="4" width="2" height="6"/><rect x="16" y="4" width="2" height="6"/><rect x="7" y="9" width="10" height="8"/><rect x="10" y="17" width="4" height="4"/>';
+      break;
+    case 'calendar':
+      d = '<rect x="4" y="5" width="16" height="14" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="2"/><rect x="8" y="12" width="2" height="2"/><rect x="12" y="12" width="2" height="2"/><rect x="8" y="15" width="2" height="2"/>';
+      break;
+    case 'cup':
+      d = '<rect x="6" y="7" width="12" height="12"/><rect x="8" y="4" width="8" height="3" opacity=".45"/><rect x="9" y="10" width="6" height="6" fill="' + cut + '"/>';
+      break;
+    case 'leaf':
+      d = '<rect x="5" y="9" width="4" height="4"/><rect x="8" y="6" width="4" height="4"/><rect x="11" y="9" width="4" height="4"/><rect x="14" y="12" width="4" height="4"/><rect x="8" y="15" width="4" height="4"/><rect x="12" y="10" width="2" height="6" fill="' + cut + '"/>';
+      break;
+    case 'plate':
+      d = '<rect x="4" y="10" width="16" height="2"/><rect x="6" y="12" width="12" height="6"/><rect x="9" y="18" width="6" height="2"/><rect x="10" y="6" width="4" height="4" opacity=".45"/>';
+      break;
+    case 'breakfast':
+      d = '<rect x="9" y="4" width="6" height="2"/><rect x="6" y="6" width="12" height="2"/><rect x="4" y="9" width="16" height="8"/><rect x="6" y="17" width="12" height="2"/><rect x="9" y="8" width="6" height="8" fill="' + cut + '"/>';
+      break;
+    case 'snack':
+      d = '<rect x="7" y="6" width="10" height="2"/><rect x="5" y="8" width="14" height="8"/><rect x="7" y="16" width="10" height="2"/><rect x="8" y="10" width="2" height="2" fill="' + cut + '"/><rect x="14" y="12" width="2" height="2" fill="' + cut + '"/>';
+      break;
+    case 'bowl':
+      d = '<rect x="3" y="10" width="18" height="2"/><rect x="5" y="12" width="14" height="6"/><rect x="8" y="18" width="8" height="2"/><rect x="9" y="5" width="2" height="4" opacity=".45"/><rect x="14" y="6" width="2" height="3" opacity=".45"/>';
+      break;
+    default:
+      d = '<rect x="4" y="7" width="16" height="12"/><rect x="6" y="4" width="12" height="3" opacity=".65"/><rect x="10" y="7" width="4" height="12" fill="' + cut + '"/>';
+  }
+  return pixelSvg(d);
+}
+var CATEGORY_ICON = { '数码': 'device', '文具': 'pencil', '药品': 'pill', '食品': 'bowl', '日用品': 'bottle', '工具': 'tool', '厨具': 'pan', '衣物': 'shirt', '证件票据': 'card', '运动户外': 'sport', '小家电': 'plug', '其他': 'box' };
+function fallbackIcon(item) {
+  return pixelIcon(CATEGORY_ICON[item.category] || 'box');
+}
+function pixelFoodIcon(name, mealKey) {
+  var n = name || '';
+  if (mealKey === 'breakfast') return pixelIcon('breakfast');
+  if (mealKey === 'snack') return pixelIcon('snack');
+  if (/饮|奶|可乐|豆浆|咖啡|茶/.test(n)) return pixelIcon('cup');
+  if (/饭|面|粉|粥|米/.test(n)) return pixelIcon('bowl');
+  if (/沙拉|菜|蔬/.test(n)) return pixelIcon('leaf');
+  if (/蛋|鸡|肉|鱼/.test(n)) return pixelIcon('plate');
+  return pixelIcon('bowl');
+}
+function pixelMealIcon(key) { return pixelFoodIcon('', key); }
+function pixelIntentIcon(kind) { return pixelIcon(kind === 'expiry' ? 'calendar' : (kind === 'diet' ? 'bowl' : 'box')); }
 
 /* ---------- 数据存储 ---------- */
 var applyingRemote = false;
