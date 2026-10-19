@@ -10,6 +10,9 @@ var MEALS = [
 function mealLabel(key) { for (var i = 0; i < MEALS.length; i++) if (MEALS[i].key === key) return MEALS[i].label; return key; }
 
 /* ---------- 饮食视图 ---------- */
+function mealTime(key) {
+  return { breakfast: '07:30', lunch: '12:00', dinner: '18:30', snack: '21:00' }[key] || '--:--';
+}
 function renderDiet() {
   var today = todayISO();
   var m = getMeals(today);
@@ -22,30 +25,35 @@ function renderDiet() {
   var fCal = Math.round(f * 9 / Math.max(1, kcal) * 100);
   var cCal = Math.max(0, 100 - pCal - fCal);
 
-  var html = '<div class="card">';
-  html += '<h3>今日饮食 <span class="muted">' + today + '</span></h3>';
-  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + target + ' kcal</span><span>' + (kcal > target ? '已超标 ' : '剩余 ' + Math.max(0, target - kcal) + ' kcal') + '</span></div>';
-  html += '<div class="kcal-progress"><i style="width:' + pct + '%" class="' + (kcal > target ? 'over' : '') + '"></i></div>';
-  html += '<div class="nutri-row">';
-  html += '<div class="nutri"><div class="v">' + Math.round(kcal) + '</div><div class="k">千卡</div></div>';
-  html += '<div class="nutri"><div class="v">' + Math.round(p) + 'g</div><div class="k">蛋白质 ' + pCal + '%</div></div>';
-  html += '<div class="nutri"><div class="v">' + Math.round(f) + 'g</div><div class="k">脂肪 ' + fCal + '%</div></div>';
-  html += '<div class="nutri"><div class="v">' + Math.round(c) + 'g</div><div class="k">碳水 ' + cCal + '%</div></div>';
-  html += '</div>';
-  html += '<div style="display:flex;gap:8px;margin-top:6px">';
-  html += '<button class="btn btn-primary" style="flex:1" onclick="openCapture(\'diet\')">拍照记一餐</button>';
-  html += '<button class="btn btn-ghost" style="flex:1" onclick="openManualDiet()">手动记一笔</button>';
-  html += '</div>';
+  var html = '<section class="diet-head">';
+  html += '<div><div class="stage-kicker"><span class="eyebrow-code">04</span><span>FUEL LEDGER</span></div>';
+  html += '<h2>今天的能量流向</h2><p>' + today + ' / 目标 ' + target + ' kcal</p></div>';
+  html += '<div class="diet-actions"><button class="btn btn-primary btn-sm" onclick="openCapture(\'diet\')">拍照记一餐</button><button class="btn btn-ghost btn-sm" onclick="openManualDiet()">手动记一笔</button></div>';
+  html += '</section>';
+
+  html += '<div class="diet-dashboard">';
+  html += '<section class="kcal-core">';
+  html += '<div class="kcal-topline"><span>INTAKE / TODAY</span><span class="' + (kcal > target ? 'over' : '') + '">' + pct + '% OF GOAL</span></div>';
+  html += '<div class="kcal-number">' + kcal + '<span>kcal</span></div>';
+  html += '<div class="kcal-goal">' + (kcal > target ? '已超出目标 ' + (kcal - target) + ' kcal' : '剩余 ' + Math.max(0, target - kcal) + ' kcal') + '</div>';
+  html += '<div class="kcal-progress"><i style="width:' + Math.min(100, pct) + '%" class="' + (kcal > target ? 'over' : '') + '"></i></div>';
+  html += '<div class="macro-grid">';
+  html += '<div class="macro-cell"><span>PROTEIN</span><b>' + Math.round(p) + 'g</b><div class="macro-bar"><i style="width:' + Math.min(100, pCal) + '%"></i></div><small>' + pCal + '%</small></div>';
+  html += '<div class="macro-cell"><span>FAT</span><b>' + Math.round(f) + 'g</b><div class="macro-bar"><i style="width:' + Math.min(100, fCal) + '%"></i></div><small>' + fCal + '%</small></div>';
+  html += '<div class="macro-cell"><span>CARBS</span><b>' + Math.round(c) + 'g</b><div class="macro-bar"><i style="width:' + Math.min(100, cCal) + '%"></i></div><small>' + cCal + '%</small></div>';
+  html += '</div></section>';
+
+  html += '<section class="trend-panel"><div class="panel-code">7D INTAKE / TARGET ' + target + '</div>' + trendHTML(target) + '</section>';
   html += '</div>';
 
-  html += '<div class="card"><h3>近 7 日摄入</h3>' + trendHTML(target) + '</div>';
-
+  html += '<div class="meal-ledger">';
   MEALS.forEach(function (meal) {
     var arr = m[meal.key] || [];
-    html += '<div class="meal-sec">';
-    html += '<div class="meal-head"><span>' + pixelMealIcon(meal.key) + ' ' + meal.label + '</span><span class="kcal">' + sumKcal(arr) + ' kcal</span></div>';
+    html += '<section class="meal-block">';
+    html += '<header><span class="meal-stamp">' + mealTime(meal.key) + '</span><b>' + meal.label + '</b><span class="kcal">' + sumKcal(arr) + ' kcal</span></header>';
+    html += '<div class="meal-items">';
     if (arr.length === 0) {
-      html += '<div class="muted" style="padding:4px 2px 10px">还没有记录</div>';
+      html += '<div class="meal-empty">NO ENTRY / 未记录</div>';
     } else {
       arr.forEach(function (d) {
         html += '<div class="diet-row">';
@@ -57,14 +65,13 @@ function renderDiet() {
         html += '</div>';
       });
     }
-    html += '</div>';
+    html += '</div></section>';
   });
+  html += '</div>';
 
-  html += '<div class="advice-card"><div class="title">今日健康小建议</div><ul>' + adviceItems(kcal, p, f, c, target) + '</ul><div class="disclaimer">以上为生活化建议，仅供参考，不构成医疗建议。</div></div>';
-
+  html += '<section class="advice-strip"><div class="advice-label">NUTRITION NOTE / 仅供生活参考</div><ul>' + adviceItems(kcal, p, f, c, target) + '</ul></section>';
   $('#view').innerHTML = html;
 }
-
 function trendHTML(target) {
   var days = [];
   for (var i = 6; i >= 0; i--) {
@@ -140,8 +147,13 @@ function saveManualDiet() {
 function renderProfile() {
   var p = DB.profile;
   var s = DB.settings;
-  var html = accountCardHTML();
-  html += '<div class="card"><h3>健康档案</h3>';
+  var html = '<section class="settings-head">';
+  html += '<div><div class="stage-kicker"><span class="eyebrow-code">05</span><span>SYSTEM PROFILE</span></div><h2>系统设置</h2><p>云端身份 / 健康参数 / 提醒策略 / 数据操作</p></div>';
+  html += '</section>';
+  html += '<div class="settings-grid">';
+  html += accountCardHTML();
+
+  html += '<section class="setting-block"><div class="setting-title"><span>PROFILE</span><h3>健康档案</h3></div>';
   html += '<div class="form-grid">';
   html += '<div class="field"><label>性别</label><select id="p_gender" onchange="saveProfile()">';
   html += '<option value="男"' + (p.gender === '男' ? ' selected' : '') + '>男</option>';
@@ -162,25 +174,24 @@ function renderProfile() {
   html += '</div>';
   html += '<button class="btn btn-ghost btn-block" onclick="recalcTarget()">按档案重新计算每日目标</button>';
   html += '<div class="muted" id="targetMeta" style="margin-top:8px"></div>';
+  html += '</section>';
+
+  html += '<section class="setting-block"><div class="setting-title"><span>ALERT</span><h3>提醒策略</h3></div>';
+  html += '<div class="setting-line"><span>提前提醒</span><b>' + (s.remindDays || [30, 7, 3]).join(' / ') + ' 天</b></div>';
+  html += '<label class="setting-toggle"><input type="checkbox" id="p_notify"' + (s.notify ? ' checked' : '') + ' onchange="updateNotify(this.checked)" /><span>开启临期提醒（角标 + 时间轴高亮）</span></label>';
+  html += '<div class="setting-line"><span>日历输出</span><b>ICS / 到期前 3 天与 1 天</b></div>';
+  html += '</section>';
+
+  html += '<section class="setting-block wide"><div class="setting-title"><span>LOCAL DATA</span><h3>数据操作</h3></div>';
+  html += '<div class="settings-actions"><button class="btn btn-ghost" onclick="exportData()">导出数据 JSON</button><button class="btn btn-danger" onclick="resetDemo()">重置演示数据</button></div>';
+  html += '<div class="muted">本地数据会在登录后自动同步到云端；重置前请先导出备份。</div>';
+  html += '</section>';
   html += '</div>';
-
-  html += '<div class="card"><h3>提醒设置</h3>';
-  html += '<div class="about-line"><b>提前提醒天数：</b>' + (s.remindDays || [30, 7, 3]).join(' / ') + ' 天</div>';
-  html += '<label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="p_notify"' + (s.notify ? ' checked' : '') + ' onchange="updateNotify(this.checked)" /> 开启临期提醒（页面角标 + 列表高亮）</label>';
-  html += '</div>';
-
-  html += '<div class="card"><h3>数据管理</h3>';
-  html += '<div style="display:flex;gap:8px">';
-  html += '<button class="btn btn-ghost" style="flex:1" onclick="exportData()">导出数据(JSON)</button>';
-  html += '<button class="btn btn-danger" style="flex:1" onclick="resetDemo()">重置演示数据</button>';
-  html += '</div></div>';
-
 
   $('#view').innerHTML = html;
   var ct = computeTarget(p);
-  $('#targetMeta').textContent = '估算：基础代谢 ' + ct.bmr + ' kcal · 每日消耗(TDEE) ' + ct.tdee + ' kcal · 当前目标 ' + ct.target + ' kcal';
+  $('#targetMeta').textContent = '基础代谢 ' + ct.bmr + ' kcal · TDEE ' + ct.tdee + ' kcal · 当前目标 ' + ct.target + ' kcal';
 }
-
 function saveProfile() {
   var p = DB.profile;
   p.gender = $('#p_gender').value;
@@ -530,31 +541,27 @@ cloudAuto();
 function accountCardHTML() {
   var cfgReady = (typeof Cloud !== 'undefined') && Cloud.isReady();
   var logged = cfgReady && Cloud.isLoggedIn();
-  var h = '<div class="card"><h3>账号与云同步</h3>';
+  var h = '<section class="setting-block account-block wide"><div class="setting-title"><span>CLOUD ID</span><h3>账号与云同步</h3></div>';
   if (!cfgReady) {
-    h += '<div class="muted" style="margin-bottom:10px">云端尚未配置：账号与多端同步未启用。请在 <b>web/config.js</b> 填入 Supabase 的 URL 与 anon key（步骤见 docs/09）。</div>';
-    h += '<div class="actions"><button class="btn btn-sm btn-ghost" onclick="toast(\'请先填写 web/config.js\')">配置说明</button></div>';
+    h += '<div class="muted" style="margin-bottom:10px">云端尚未配置：账号与多端同步未启用。</div>';
+    h += '<div class="actions"><button class="btn btn-sm btn-ghost" onclick="toast(\'请先配置云端\')">配置说明</button></div>';
   } else if (!logged) {
-    h += '<div class="muted" style="margin-bottom:10px">登录后数据会自动备份到云端，并可在多台设备间同步。<b>不登录也能拍照识别</b>（体验模式），数据仅保存在本机。</div>';
+    h += '<div class="muted" style="margin-bottom:10px">登录后数据自动备份并支持多端同步；不登录也可以使用拍照识别。</div>';
     h += '<button class="btn btn-primary btn-block" onclick="openAuthModal()">登录 / 注册</button>';
   } else {
-    h += '<div class="about-line"><b>状态：</b>已登录</div>';
-    h += '<div class="about-line"><b>账号：</b>' + esc(Cloud.currentEmail()) + '</div>';
-    h += '<div class="about-line"><b>同步：</b>本地改动后自动上传 · 支持手动“立即同步”</div>';
+    h += '<div class="setting-line"><span>状态</span><b>已登录</b></div>';
+    h += '<div class="setting-line"><span>账号</span><b>' + esc(Cloud.currentEmail()) + '</b></div>';
+    h += '<div class="setting-line"><span>同步</span><b>本地改动后自动上传</b></div>';
     var rt = (Cloud.realtimeStatus && Cloud.realtimeStatus()) || 'idle';
-    var rtText = rt === 'connected' ? 'WebSocket 实时同步已连接'
-      : (rt === 'connecting' ? '正在连接实时通道…'
-      : (rt === 'fallback' ? '轮询兜底（30 秒/次）' : '未连接（登录后自动连接）'));
-    h += '<div class="about-line"><b>实时：</b>' + rtText + '</div>';
-    h += '<div class="actions">';
-    h += '<button class="btn btn-sm btn-primary" onclick="cloudSyncNow(true)">立即同步</button>';
-    h += '<button class="btn btn-sm btn-ghost" onclick="cloudLogout()">退出登录</button>';
-    h += '</div>';
+    var rtText = rt === 'connected' ? 'WebSocket 已连接'
+      : (rt === 'connecting' ? '正在连接实时通道'
+      : (rt === 'fallback' ? '轮询兜底（30 秒/次）' : '未连接'));
+    h += '<div class="setting-line"><span>实时通道</span><b>' + rtText + '</b></div>';
+    h += '<div class="actions"><button class="btn btn-sm btn-primary" onclick="cloudSyncNow(true)">立即同步</button><button class="btn btn-sm btn-ghost" onclick="cloudLogout()">退出登录</button></div>';
   }
-  h += '</div>';
+  h += '</section>';
   return h;
 }
-
 function openAuthModal() {
   if (typeof Cloud === 'undefined' || !Cloud.isReady()) { toast('请先配置 web/config.js 中的 Supabase 信息'); return; }
   var html = modalHead('登录 / 注册');

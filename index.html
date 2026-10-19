@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="物序" />
-<link rel="stylesheet" href="css/style.css?v=20261019k" />
+<link rel="stylesheet" href="css/style.css?v=20261019l" />
 </head>
 <body>
   <!-- 顶栏 -->
@@ -23,20 +23,24 @@
         <span class="brand-logo"></span>
         <div class="brand-text">
           <h1>物序</h1>
-          <p>看得见 · 管得住 · 算得清</p>
+          <p>空间索引 · 时间轴 · 生活账本</p>
         </div>
       </div>
-      <span class="demo-chip" id="modeChip" title="当前为本地演示数据，未调用真实视觉 API">演示模式</span>
+      <div class="topbar-hud">
+        <span class="hud-meta">LOCAL NODE // 04</span>
+        <span class="hud-clock" id="hudClock">--:--:--</span>
+        <span class="demo-chip" id="modeChip" title="当前为本地演示数据，未调用真实视觉 API">演示模式</span>
+      </div>
     </div>
   </header>
 
   <!-- 主视图容器 -->
   <nav class="mainnav" id="mainnav">
-    <button class="nav-item" data-view="home" onclick="go('home')">首页</button>
-    <button class="nav-item" data-view="items" onclick="go('items')">物品库</button>
-    <button class="nav-item" data-view="expiry" onclick="go('expiry')">保质期</button>
-    <button class="nav-item" data-view="diet" onclick="go('diet')">饮食</button>
-    <button class="nav-item" data-view="profile" onclick="go('profile')">我的</button>
+    <button class="nav-item" data-view="home" onclick="go('home')"><span class="idx">01</span><span class="label">概览</span></button>
+    <button class="nav-item" data-view="items" onclick="go('items')"><span class="idx">02</span><span class="label">仓格</span></button>
+    <button class="nav-item" data-view="expiry" onclick="go('expiry')"><span class="idx">03</span><span class="label">时间</span></button>
+    <button class="nav-item" data-view="diet" onclick="go('diet')"><span class="idx">04</span><span class="label">饮食</span></button>
+    <button class="nav-item" data-view="profile" onclick="go('profile')"><span class="idx">05</span><span class="label">设置</span></button>
   </nav>
 
   <main id="view" class="view"></main>
@@ -50,13 +54,13 @@
   <!-- 隐藏文件选择（拍照/相册） -->
   <input type="file" id="fileInput" accept="image/*" hidden />
 
-  <script src="config.js?v=20261019k"></script>
-  <script src="js/mock.js?v=20261019k"></script>
-  <script src="js/app.js?v=20261019k"></script>
-  <script src="js/camera.js?v=20261019k"></script>
-  <script src="js/app2.js?v=20261019k"></script>
-  <script src="js/cloud.js?v=20261019k"></script>
-  <script src="js/ai.js?v=20261019k"></script>
+  <script src="config.js?v=20261019l"></script>
+  <script src="js/mock.js?v=20261019l"></script>
+  <script src="js/app.js?v=20261019l"></script>
+  <script src="js/camera.js?v=20261019l"></script>
+  <script src="js/app2.js?v=20261019l"></script>
+  <script src="js/cloud.js?v=20261019l"></script>
+  <script src="js/ai.js?v=20261019l"></script>
 </body>
 </html>
 

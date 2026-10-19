@@ -240,10 +240,9 @@ function render() {
 /* 底部导航角标：临期(<=7天+过期) 数量 */
 function updateExpiryBadge() {
   var n = countUrgent();
-  var nav = $('#mainnav .nav-item[data-view="expiry"] span');
-  if (!nav) return;
-  nav.textContent = n > 0 ? '' : '';
-  nav.setAttribute('data-badge', n > 0 ? String(n) : '');
+  var btn = $('#mainnav .nav-item[data-view="expiry"]');
+  if (!btn) return;
+  btn.setAttribute('data-badge', n > 0 ? String(n) : '');
 }
 function countUrgent() {
   return expiringItems().filter(function (i) {
@@ -266,58 +265,74 @@ function renderHome() {
   var st = statCounts();
   var exp = expiringItems().slice().sort(function (a, b) {
     return (daysUntil(a.expireDate) || 0) - (daysUntil(b.expireDate) || 0);
-  }).filter(function (i) { return daysUntil(i.expireDate) <= 30; }).slice(0, 3);
-  var recent = activeItems().slice().sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); }).slice(0, 3);
+  }).filter(function (i) { return daysUntil(i.expireDate) <= 30; }).slice(0, 4);
+  var recent = activeItems().slice().sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); }).slice(0, 4);
+  var pct = Math.min(100, Math.round(st.kcal / st.target * 100));
 
-  var html = '';
-  html += '<div class="hero-capture" onclick="openCapture()">';
-  html += '  <div class="big" aria-hidden="true"></div>';
-  html += '  <div><div class="t1">拍一下，管理生活</div><div class="t2">物品入库 / 保质期 / 记一餐 · 一次拍照智能识别</div></div>';
+  var html = '<section class="overview-head">';
+  html += '<div class="stage-kicker"><span class="eyebrow-code">01</span><span>SPATIAL OVERVIEW</span></div>';
+  html += '<h2>把生活物品，<br />放回可检索的位置。</h2>';
+  html += '<p>空间索引 / 临期时间轴 / 每日能量账本</p>';
+  html += '</section>';
+
+  html += '<div class="overview-stage">';
+  html += '<section class="scan-panel" onclick="openCapture()">';
+  html += '<div class="scan-grid"></div>';
+  html += '<div class="scan-topline"><span>SCAN.NODE // CAM_IN</span><span>READY</span></div>';
+  html += '<div class="scan-reticle"><i></i><i></i><i></i><i></i></div>';
+  html += '<div class="scan-copy"><div class="scan-title">拍一下，建立索引</div><div class="scan-sub">物品入库 / 保质期识别 / 饮食记录</div></div>';
+  html += '<div class="scan-footer"><span>CAMERA · ALBUM · OCR</span><span class="scan-cta">ENTER CAPTURE →</span></div>';
+  html += '</section>';
+
+  html += '<aside class="telemetry">';
+  html += '<div class="telemetry-row"><span class="telemetry-code">IN_STOCK</span><strong>' + st.items + '</strong><span class="telemetry-label">在库物件</span></div>';
+  html += '<div class="telemetry-row' + (st.urgent > 0 ? ' alert' : '') + '"><span class="telemetry-code">DUE_SOON</span><strong>' + st.urgent + '</strong><span class="telemetry-label">临期 / 过期</span></div>';
+  html += '<div class="telemetry-row"><span class="telemetry-code">KCAL_TODAY</span><strong>' + st.kcal + '</strong><span class="telemetry-label">今日摄入</span></div>';
+  html += '</aside>';
   html += '</div>';
 
-  html += '<div class="stat-grid">';
-  html += '<div class="stat"><div class="num">' + st.items + '</div><div class="lbl">物品总数</div></div>';
-  html += '<div class="stat"><div class="num ' + (st.urgent > 0 ? 'warn' : '') + '">' + st.urgent + '</div><div class="lbl">临期/过期</div></div>';
-  html += '<div class="stat"><div class="num">' + st.kcal + '</div><div class="lbl">今日摄入 kcal</div></div>';
-  html += '</div>';
-
-  html += '<div class="card"><h3>临期提醒 <span class="link" onclick="go(\'expiry\')">全部 →</span></h3>';
+  html += '<div class="overview-lower">';
+  html += '<section class="ledger-panel due-panel">';
+  html += '<div class="ledger-head"><div><span class="eyebrow-code">02</span> DUE QUEUE</div><button class="text-link" onclick="go(\'expiry\')">OPEN ALL →</button></div>';
+  html += '<div class="queue-list">';
   if (exp.length === 0) {
-    html += '<div class="muted">暂无临期物品，继续保持</div>';
+    html += '<div class="queue-empty">队列为空 / 暂无临期物品</div>';
   } else {
     exp.forEach(function (i) {
       var d = daysUntil(i.expireDate);
-      html += '<div class="expiry-row" style="padding:7px 0;border-bottom:1px solid var(--line)">';
-      html += '  <div class="pic">' + fallbackIcon(i) + '</div>';
-      html += '  <div class="meta"><div class="name">' + esc(i.name) + '</div><div class="sub">' + esc(i.location || '') + (i.storage ? ' · ' + esc(i.storage) : '') + '</div></div>';
-      html += '  <div class="right">' + daysChip(d) + '</div>';
+      html += '<div class="queue-row" onclick="openItemDetail(\'' + i.id + '\')">';
+      html += '<div class="queue-time">' + (d < 0 ? 'EXP' : d + 'D') + '</div>';
+      html += '<div class="queue-meta"><b>' + esc(i.name) + '</b><span>' + esc(i.location || '未设置位置') + '</span></div>';
+      html += '<div class="queue-state">' + daysChip(d) + '</div>';
       html += '</div>';
     });
   }
-  html += '</div>';
+  html += '</div></section>';
 
-  html += '<div class="card"><h3>最近入库 <span class="link" onclick="go(\'items\')">物品库 →</span></h3>';
-  if (recent.length === 0) { html += '<div class="muted">还没有物品，点上方“拍一下”入库吧</div>'; }
-  else {
+  html += '<section class="ledger-panel recent-panel">';
+  html += '<div class="ledger-head"><div><span class="eyebrow-code">03</span> LAST INDEXED</div><button class="text-link" onclick="go(\'items\')">MATRIX →</button></div>';
+  html += '<div class="queue-list">';
+  if (recent.length === 0) {
+    html += '<div class="queue-empty">尚未建立索引 / 点击扫描节点开始</div>';
+  } else {
     recent.forEach(function (i) {
-      html += '<div class="expiry-row" style="padding:7px 0;border-bottom:1px solid var(--line)" onclick="openItemDetail(\'' + i.id + '\')">';
-      html += '  <div class="pic">' + fallbackIcon(i) + '</div>';
-      html += '  <div class="meta"><div class="name">' + esc(i.name) + '</div><div class="sub">' + esc(i.location || '未设置位置') + '</div></div>';
-      html += '  <div class="right"><span class="tag cat">' + esc(i.category || '其他') + '</span></div>';
+      html += '<div class="queue-row" onclick="openItemDetail(\'' + i.id + '\')">';
+      html += '<div class="queue-icon">' + fallbackIcon(i) + '</div>';
+      html += '<div class="queue-meta"><b>' + esc(i.name) + '</b><span>' + esc(i.category || '其他') + ' · ' + esc(i.location || '未设置位置') + '</span></div>';
+      html += '<div class="queue-code">#' + esc(String(i.id || '').slice(-4).toUpperCase()) + '</div>';
       html += '</div>';
     });
   }
-  html += '</div>';
+  html += '</div></section></div>';
 
-  html += '<div class="card"><h3>今日饮食 <span class="link" onclick="go(\'diet\')">详情 →</span></h3>';
-  var pct = Math.min(100, Math.round(st.kcal / st.target * 100));
-  html += '<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">目标 ' + st.target + ' kcal</span><span>' + (st.kcal > st.target ? '已超标 ' : '进度 ' + pct + '%') + '</span></div>';
-  html += '<div class="kcal-progress"><i style="width:' + pct + '%" class="' + (st.kcal > st.target ? 'over' : '') + '"></i></div>';
-  html += '</div>';
+  html += '<section class="fuel-strip">';
+  html += '<div class="fuel-label"><span class="eyebrow-code">04</span><b>DAILY FUEL</b><span>今日饮食账本</span></div>';
+  html += '<div class="fuel-main"><div class="fuel-numbers"><strong>' + st.kcal + '</strong><span>/ ' + st.target + ' kcal</span></div><div class="fuel-progress"><i style="width:' + pct + '%" class="' + (st.kcal > st.target ? 'over' : '') + '"></i></div></div>';
+  html += '<button class="text-link fuel-link" onclick="go(\'diet\')">OPEN LEDGER →</button>';
+  html += '</section>';
 
   $('#view').innerHTML = html;
 }
-
 /* =========================================================
    第 2 部分：物品库 / 保质期 视图与操作
    ========================================================= */
@@ -342,21 +357,27 @@ function renderItems() {
   var selectedCount = Object.keys(itemSelected).length;
   activeItems().forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
 
-  var html = '<div class="card" style="padding:12px">';
-  html += '<div class="searchbar"><input id="itemSearch" placeholder="搜索名称 / 位置 / 分类…" value="' + esc(itemQ) + '" oncompositionstart="itemSearchComposition(true)" oncompositionend="itemSearchComposition(false, this.value)" oninput="itemSearch(this.value)" /></div>';
+  var html = '<section class="catalog-head">';
+  html += '<div class="stage-kicker"><span class="eyebrow-code">02</span><span>STORAGE MATRIX</span></div>';
+  html += '<h2>仓格矩阵</h2><p>按位置、分类和状态检索每一件在库物件。</p>';
+  html += '</section>';
+
+  html += '<section class="catalog-controls">';
+  html += '<div class="catalog-search-row">';
+  html += '<div class="searchbar"><input id="itemSearch" placeholder="检索名称 / 位置 / 分类…" value="' + esc(itemQ) + '" oncompositionstart="itemSearchComposition(true)" oncompositionend="itemSearchComposition(false, this.value)" oninput="itemSearch(this.value)" /></div>';
+  html += '<button class="btn btn-ghost btn-sm" onclick="toggleItemSelectMode()">' + (itemSelectMode ? '退出批量' : '批量管理') + '</button>';
+  html += '</div>';
   html += '<div class="chips">';
   cats.forEach(function (c) {
     html += '<button class="chip' + (c === itemCat ? ' active' : '') + '" onclick="itemCatFilter(\'' + c + '\')">' + esc(c) + '</button>';
   });
   html += '</div>';
-  html += '<div class="item-toolbar">';
-  html += '<button class="btn btn-primary" onclick="openItemForm(null)">＋ 手动添加物品</button>';
-  html += '<button class="btn btn-ghost" onclick="toggleItemSelectMode()">' + (itemSelectMode ? '退出批量' : '批量管理') + '</button>';
-  html += '</div></div>';
+  html += '<div class="catalog-footer"><span class="catalog-count">' + list.length + ' OBJECTS / ' + cats.length + ' TAGS</span><button class="btn btn-primary btn-sm" onclick="openItemForm(null)">＋ 新建索引</button></div>';
+  html += '</section>';
 
   if (itemSelectMode) {
     html += '<div class="batch-bar">';
-    html += '<div><b class="batch-count">已选 ' + selectedCount + ' 件</b><div class="muted">点击物品卡片进行选择</div></div>';
+    html += '<div><b class="batch-count">已选 ' + selectedCount + ' 件</b><div class="muted">点击仓格行进行选择</div></div>';
     html += '<div class="batch-actions">';
     html += '<button class="btn btn-sm btn-ghost" onclick="selectAllVisibleItems()">全选当前</button>';
     html += '<button class="btn btn-sm btn-ghost" onclick="clearItemSelection()">取消选择</button>';
@@ -366,19 +387,18 @@ function renderItems() {
   html += '<div id="itemResults">' + itemResultsHTML(list) + '</div>';
   $('#view').innerHTML = html;
 }
-
 function itemResultsHTML(list) {
   var html = '';
   if (list.length === 0) {
-    html += '<div class="empty"><div class="ic"></div><p>没有找到相关物品</p></div>';
+    html += '<div class="empty"><div class="ic"></div><p>没有匹配的仓格记录</p></div>';
   } else {
-    html += '<div class="item-grid">';
+    html += '<div class="rack-table">';
+    html += '<div class="rack-head"><span>OBJECT</span><span>LOCATION</span><span>STATE</span><span>ID</span></div>';
     list.forEach(function (i) { html += itemCardHTML(i); });
     html += '</div>';
   }
   return html;
 }
-
 function filteredItems() {
   var list = activeItems().slice();
   var kw = itemQ.trim().toLowerCase();
@@ -464,21 +484,15 @@ function itemCardHTML(i) {
   var d = i.expireDate ? daysUntil(i.expireDate) : null;
   var selected = !!itemSelected[i.id];
   var action = itemSelectMode ? ('toggleItemSelect(\'' + i.id + '\')') : ('openItemDetail(\'' + i.id + '\')');
-  var h = '<div class="item-card' + (itemSelectMode ? ' selectable' : '') + (selected ? ' selected' : '') + '" data-id="' + esc(i.id) + '" onclick="' + action + '">';
+  var h = '<div class="item-card rack-row' + (itemSelectMode ? ' selectable' : '') + (selected ? ' selected' : '') + '" data-id="' + esc(i.id) + '" onclick="' + action + '">';
   if (itemSelectMode) h += '<span class="select-mark" aria-hidden="true"></span>';
-  h += '<div class="pic">' + fallbackIcon(i) + '</div>';
-  h += '<div class="meta">';
-  h += '<div class="name">' + esc(i.name) + '</div>';
-  h += '<div class="sub">' + esc(i.location || '未设置位置') + (i.count > 1 ? ' · ×' + i.count : '') + '</div>';
-  h += '<div class="foot">';
-  h += '<span class="tag cat">' + esc(i.category || '其他') + '</span>';
-  if (i.kind === 'food') h += '<span class="tag">食品</span>';
-  if (i.kind === 'medicine') h += '<span class="tag">药品</span>';
-  if (d !== null) h += daysChip(d);
-  h += '</div></div></div>';
+  h += '<div class="rack-object"><div class="pic">' + fallbackIcon(i) + '</div><div class="meta"><div class="name">' + esc(i.name) + (i.count > 1 ? ' <span class="rack-count">×' + i.count + '</span>' : '') + '</div><div class="sub">' + esc(i.category || '其他') + (i.note ? ' · ' + esc(i.note) : '') + '</div></div></div>';
+  h += '<div class="rack-loc"><span class="rack-mobile-label">位置</span>' + esc(i.location || '未设置位置') + '</div>';
+  h += '<div class="rack-state"><span class="rack-mobile-label">状态</span>' + (d !== null ? daysChip(d) : '<span class="tag">在库</span>') + '</div>';
+  h += '<div class="rack-code">#' + esc(String(i.id || '').slice(-4).toUpperCase()) + '</div>';
+  h += '</div>';
   return h;
 }
-
 /* ---------- 保质期视图 ---------- */
 function expiryGroups() {
   var g = { expired: [], soon7: [], soon30: [], normal: [] };
@@ -495,55 +509,56 @@ function expiryGroups() {
 function renderExpiry() {
   var g = expiryGroups();
   var calItems = calendarReminderItems();
-  var html = '<div class="card" style="padding:12px">';
-  html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
-  html += '<div><b style="font-size:16px">保质期提醒</b><div class="muted">临期分级 · 及时处理不浪费</div></div>';
-  html += '<div class="actions" style="margin:0">';
-  html += '<button class="btn btn-primary btn-sm" onclick="openCapture(\'expiry\')">扫描包装</button>';
-  html += '<button class="btn btn-ghost btn-sm" onclick="goBatchItems()">批量清理</button>';
-  html += '</div>';
-  html += '</div></div>';
+  var total = g.expired.length + g.soon7.length + g.soon30.length + g.normal.length;
 
-  html += '<div class="calendar-card">';
-  html += '<div><div class="cal-title">日历提醒</div><div class="muted">' + (calItems.length ? ('把 ' + calItems.length + ' 件临期物品加入系统日历，到期前 3 天和 1 天提醒') : ('未来 ' + CALENDAR_DAYS + ' 天内暂无需要加入日历的物品')) + '</div></div>';
-  html += '<button class="btn btn-primary btn-sm" onclick="openCalendarReminder()"' + (calItems.length ? '' : ' disabled') + '>添加到日历' + (calItems.length ? '（' + calItems.length + '）' : '') + '</button>';
+  var html = '<section class="timeline-head">';
+  html += '<div><div class="stage-kicker"><span class="eyebrow-code">03</span><span>EXPIRY RAIL</span></div>';
+  html += '<h2>到期时间轴</h2><p>按剩余时间排列，先处理红色与橙色区段。</p></div>';
+  html += '<div class="timeline-controls"><button class="btn btn-primary btn-sm" onclick="openCapture(\'expiry\')">扫描包装</button><button class="btn btn-ghost btn-sm" onclick="goBatchItems()">批量清理</button></div>';
+  html += '</section>';
+
+  html += '<div class="calendar-relay">';
+  html += '<div class="relay-mark"></div>';
+  html += '<div class="relay-copy"><b>CALENDAR RELAY</b><span>' + (calItems.length ? ('把 ' + calItems.length + ' 件临期物品交给系统日历，到期前 3 天和 1 天提醒') : ('未来 ' + CALENDAR_DAYS + ' 天内没有需要加入日历的物品')) + '</span></div>';
+  html += '<button class="btn btn-sm btn-primary" onclick="openCalendarReminder()"' + (calItems.length ? '' : ' disabled') + '>添加到日历' + (calItems.length ? '（' + calItems.length + '）' : '') + '</button>';
   html += '</div>';
 
   var groups = [
-    { key: 'expired', title: '已过期', dot: 'red' },
-    { key: 'soon7', title: '7 天内到期', dot: 'orange' },
-    { key: 'soon30', title: '30 天内到期', dot: 'amber' },
-    { key: 'normal', title: '正常（>30 天）', dot: 'green' }
+    { key: 'expired', title: '已过期', code: 'EXPIRED', cls: 'red' },
+    { key: 'soon7', title: '7 天内到期', code: 'CRITICAL', cls: 'orange' },
+    { key: 'soon30', title: '30 天内到期', code: 'WATCH', cls: 'amber' },
+    { key: 'normal', title: '正常区间', code: 'STABLE', cls: 'green' }
   ];
-  var total = g.expired.length + g.soon7.length + g.soon30.length + g.normal.length;
+
   if (total === 0) {
-    html += '<div class="empty"><div class="ic"></div><p>还没有食品/药品记录，点“扫描包装”拍一个吧</p></div>';
+    html += '<div class="empty"><div class="ic"></div><p>时间轴为空，点“扫描包装”建立第一条保质期记录</p></div>';
   } else {
     groups.forEach(function (gr) {
       var arr = g[gr.key];
       if (arr.length === 0) return;
-      html += '<div class="group-title"><span class="dot ' + gr.dot + '"></span>' + gr.title + '<span class="cnt">' + arr.length + ' 件</span></div>';
+      html += '<section class="timeline-band band-' + gr.cls + '">';
+      html += '<div class="band-label"><span class="band-code">' + gr.code + '</span><b>' + gr.title + '</b><span class="band-count">' + arr.length + ' ITEMS</span></div>';
+      html += '<div class="band-items">';
       arr.forEach(function (i) {
         var d = daysUntil(i.expireDate);
         var isFood = i.kind !== 'medicine';
-        html += '<div class="card" style="padding:12px;margin-bottom:8px">';
-        html += '<div class="expiry-row">';
+        var pct = d < 0 ? 100 : Math.max(5, Math.min(100, 100 - d / 30 * 100));
+        html += '<div class="time-row">';
         html += '<div class="pic">' + fallbackIcon(i) + '</div>';
-        html += '<div class="meta"><div class="name">' + esc(i.name) + (i.count > 1 ? ' <span class="muted">×' + i.count + '</span>' : '') + '</div>';
-        html += '<div class="sub">' + esc(i.location || '') + (i.storage ? ' · ' + esc(i.storage) : '') + '</div></div>';
-        html += '<div class="right">' + daysChip(d) + '<div class="muted" style="margin-top:2px">' + esc(i.expireDate) + '</div></div>';
-        html += '</div>';
-        html += '<div class="actions">';
+        html += '<div class="time-meta"><div class="name">' + esc(i.name) + (i.count > 1 ? ' <span class="muted">×' + i.count + '</span>' : '') + '</div><div class="sub">' + esc(i.expireDate) + ' · ' + esc(i.location || '未设置位置') + (i.storage ? ' · ' + esc(i.storage) : '') + '</div></div>';
+        html += '<div class="time-meter"><i style="width:' + pct + '%"></i><span>' + (d < 0 ? ('OVER ' + Math.abs(d) + 'D') : ('T-' + d + 'D')) + '</span></div>';
+        html += '<div class="time-right">' + daysChip(d) + '</div>';
+        html += '<div class="time-actions">';
         html += '<button class="btn btn-sm btn-primary" onclick="expireAction(\'' + i.id + '\',\'' + (isFood ? 'eat' : 'use') + '\')">' + (isFood ? '已食用' : '已用完') + '</button>';
         html += '<button class="btn btn-sm btn-danger" onclick="expireAction(\'' + i.id + '\',\'discard\')">已丢弃</button>';
         html += '<button class="btn btn-sm btn-ghost" onclick="openItemDetail(\'' + i.id + '\')">编辑</button>';
         html += '</div></div>';
       });
+      html += '</div></section>';
     });
   }
   $('#view').innerHTML = html;
 }
-
 /* 处理临期：食用/用完/丢弃 -> 状态置 done */
 function expireAction(id, act) {
   var item = null;
@@ -809,4 +824,11 @@ function openItemDetail(id) {
   $('#modal-root .modal').appendChild(hid);
 }
 
-
+function tickHudClock() {
+  var el=document.getElementById('hudClock');
+  if(!el) return;
+  var d=new Date();
+  el.textContent=[d.getHours(),d.getMinutes(),d.getSeconds()].map(function(n){return String(n).padStart(2,'0');}).join(':');
+}
+setInterval(tickHudClock,1000);
+tickHudClock();
