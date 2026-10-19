@@ -28,7 +28,7 @@ function fmt(days) {
   return '剩 ' + days + ' 天';
 }
 function pixelSvg(inner) {
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" shape-rendering="crispEdges" aria-hidden="true">' + inner + '</svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">' + inner + '</svg>';
 }
 function pixelIcon(kind) {
   var cut = '#0d2744';
