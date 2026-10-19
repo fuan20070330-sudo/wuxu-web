@@ -1004,3 +1004,29 @@ body {
 /* 统一图标颜色 */
 .meal-head svg { color: var(--brand); }
 
+
+/* 像素图标统一：全部使用品牌青蓝，内部镂空保持透明，不再出现深色块 */
+.item-card .pic,
+.expiry-row .pic,
+.diet-row .pic,
+.intent .ic,
+.meal-head svg,
+.empty .ic,
+.item-card .pic svg,
+.expiry-row .pic svg,
+.diet-row .pic svg,
+.intent .ic svg,
+.empty .ic svg,
+.nav-item span svg {
+  color: var(--brand) !important;
+  filter: none !important;
+}
+.item-card .pic svg,
+.expiry-row .pic svg,
+.diet-row .pic svg,
+.intent .ic svg,
+.empty .ic svg,
+.meal-head svg,
+.nav-item span svg {
+  fill: currentColor;
+}
