@@ -1000,3 +1000,7 @@ body {
   min-height: 32px;
 }
 .intent .ic svg { width: 32px; height: 32px; }
+
+/* 统一图标颜色 */
+.meal-head svg { color: var(--brand); }
+
