@@ -228,7 +228,7 @@ function resetDemo() {
 function openCapture(intent) {
   if (intent) { pickSource(intent); return; }
   var html = modalHead('拍一下，智能识别');
-  html += '<div class="muted" style="margin-bottom:12px">选择识别类型，系统将调用（演示为模拟）视觉大模型理解图片内容：</div>';
+  html += '<div class="muted" style="margin-bottom:12px">选择识别类型，系统将调用视觉大模型理解图片内容，结果经人工确认后保存。</div>';
   html += '<div class="intent-grid">';
   html += '<button class="intent" onclick="pickSource(\'item\')"><div class="ic">' + pixelIntentIcon('item') + '</div><div class="nm">物品入库</div><div class="ds">识别分类并记录位置</div></button>';
   html += '<button class="intent" onclick="pickSource(\'expiry\')"><div class="ic">' + pixelIntentIcon('expiry') + '</div><div class="nm">记录保质期</div><div class="ds">OCR 日期 + 到期提醒</div></button>';
@@ -242,7 +242,7 @@ function pickSource(intent) {
   html += '<button class="btn btn-primary" onclick="startPick(\'' + intent + '\',\'camera\')">拍照（调用摄像头）</button>';
   html += '<button class="btn btn-ghost" onclick="startPick(\'' + intent + '\',\'album\')">从相册选择</button>';
   html += '</div>';
-  html += '<div class="muted" style="margin-top:12px">浏览器会请求相机/文件权限；本演示选择图片后进入“AI 识别（模拟）”。</div>';
+  html += '<div class="muted" style="margin-top:12px">浏览器会请求相机或文件权限；识别失败时会自动回退演示数据，本地记录不会丢失。</div>';
   openModal(html, true);
 }
 function isTouch() { return ('ontouchstart' in window) || navigator.maxTouchPoints > 0; }
@@ -340,7 +340,7 @@ function openItemConfirm(preview, cands) {
   var locs = listLocations();
   var opt = locs.map(function (l) { return '<option value="' + esc(l) + '"></option>'; }).join('');
   var html = modalHead('物品识别结果');
-  html += '<div class="muted" style="margin-bottom:8px">演示识别到 ' + cands.length + ' 件物品，请核对后入库（名称/分类可修改）：</div>';
+  html += '<div class="muted" style="margin-bottom:8px">识别到 ' + cands.length + ' 件物品，请核对后入库（名称/分类可修改）：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   cands.forEach(function (c, i) {
     html += '<div class="card" id="crow' + i + '" style="padding:12px;margin-bottom:10px">';
@@ -398,7 +398,7 @@ function saveItemConfirm() {
 function openExpiryConfirm(preview, e) {
   e = e || MOCK.recognizeExpiry();
   var html = modalHead('保质期识别结果');
-  html += '<div class="muted" style="margin-bottom:8px">OCR + 大模型识别（演示），请核对字段后保存，系统将自动开启到期提醒：</div>';
+  html += '<div class="muted" style="margin-bottom:8px">视觉模型与 OCR 识别完成，请核对字段后保存，系统将自动开启到期提醒：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   html += '<div class="advice-card" style="margin-bottom:12px"><b>识别结论：</b>' + esc(e.name) + '，预计到期日 ' + esc(e.expireDate) + '（' + (e.daysLeft < 0 ? '已过期' + Math.abs(e.daysLeft) + ' 天' : '剩 ' + e.daysLeft + ' 天') + '）</div>';
   html += '<div class="field"><label>名称 *</label><input id="ex_name" value="' + esc(e.name) + '" /></div>';
@@ -448,7 +448,7 @@ function openDietConfirm(preview, dishes) {
   window.pendingDishCands = dishes;
   window.dietCands = dishes;
   var html = modalHead('拍照记一餐（识别结果）');
-  html += '<div class="muted" style="margin-bottom:8px">识别到 ' + dishes.length + ' 项（演示），可修改菜名 / 份量 / 热量后保存：</div>';
+  html += '<div class="muted" style="margin-bottom:8px">识别到 ' + dishes.length + ' 项，可修改菜名 / 份量 / 热量后保存：</div>';
   html += '<img class="preview-img" src="' + preview + '" alt="preview" />';
   html += '<div class="field"><label>餐次</label><select id="dc_meal">';
   MEALS.forEach(function (x) { html += '<option value="' + x.key + '"' + (x.key === defaultMealByHour() ? ' selected' : '') + '>' + x.label + '</option>'; });
