@@ -325,6 +325,9 @@ var CATS = ['数码', '文具', '药品', '食品', '日用品', '工具', '厨�
 var itemQ = '';
 var itemCat = '全部';
 var itemComposing = false;
+var itemSelectMode = false;
+var itemSelected = {};
+var CALENDAR_DAYS = 7;
 
 function catSelect(sel, cur) {
   var s = '<option value="">请选择</option>';
@@ -336,6 +339,7 @@ function catSelect(sel, cur) {
 function renderItems() {
   var list = filteredItems();
   var cats = ['全部'];
+  var selectedCount = Object.keys(itemSelected).length;
   activeItems().forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
 
   var html = '<div class="card" style="padding:12px">';
@@ -345,8 +349,20 @@ function renderItems() {
     html += '<button class="chip' + (c === itemCat ? ' active' : '') + '" onclick="itemCatFilter(\'' + c + '\')">' + esc(c) + '</button>';
   });
   html += '</div>';
-  html += '<button class="btn btn-primary btn-block" onclick="openItemForm(null)">＋ 手动添加物品</button>';
-  html += '</div>';
+  html += '<div class="item-toolbar">';
+  html += '<button class="btn btn-primary" onclick="openItemForm(null)">＋ 手动添加物品</button>';
+  html += '<button class="btn btn-ghost" onclick="toggleItemSelectMode()">' + (itemSelectMode ? '退出批量' : '批量管理') + '</button>';
+  html += '</div></div>';
+
+  if (itemSelectMode) {
+    html += '<div class="batch-bar">';
+    html += '<div><b class="batch-count">已选 ' + selectedCount + ' 件</b><div class="muted">点击物品卡片进行选择</div></div>';
+    html += '<div class="batch-actions">';
+    html += '<button class="btn btn-sm btn-ghost" onclick="selectAllVisibleItems()">全选当前</button>';
+    html += '<button class="btn btn-sm btn-ghost" onclick="clearItemSelection()">取消选择</button>';
+    html += '<button class="btn btn-sm btn-danger" onclick="deleteSelectedItems()"' + (selectedCount ? '' : ' disabled') + '>删除选中（' + selectedCount + '）</button>';
+    html += '</div></div>';
+  }
   html += '<div id="itemResults">' + itemResultsHTML(list) + '</div>';
   $('#view').innerHTML = html;
 }
@@ -397,11 +413,59 @@ function itemSearchComposition(active, v) {
     renderItemResults();
   }
 }
-function itemCatFilter(c) { itemCat = c; renderItems(); }
+function itemCatFilter(c) { itemCat = c; itemSelected = {}; renderItems(); }
+
+function toggleItemSelectMode(force) {
+  itemSelectMode = (typeof force === 'boolean') ? force : !itemSelectMode;
+  itemSelected = {};
+  renderItems();
+}
+
+function toggleItemSelect(id) {
+  if (itemSelected[id]) delete itemSelected[id];
+  else itemSelected[id] = true;
+  renderItems();
+}
+
+function selectAllVisibleItems() {
+  filteredItems().forEach(function (i) { itemSelected[i.id] = true; });
+  renderItems();
+}
+
+function clearItemSelection() {
+  itemSelected = {};
+  renderItems();
+}
+
+function goBatchItems() {
+  itemQ = '';
+  itemCat = '全部';
+  itemSelected = {};
+  itemSelectMode = true;
+  go('items');
+  if (currentView() === 'items') renderItems();
+}
+
+function deleteSelectedItems() {
+  var ids = Object.keys(itemSelected);
+  if (!ids.length) { toast('请先选择物品'); return; }
+  if (!window.confirm('确定删除选中的 ' + ids.length + ' 件物品？此操作不可恢复。')) return;
+  var drop = {};
+  ids.forEach(function (id) { drop[id] = true; });
+  DB.items = DB.items.filter(function (i) { return !drop[i.id]; });
+  itemSelected = {};
+  itemSelectMode = false;
+  saveDB();
+  render();
+  toast('已删除 ' + ids.length + ' 件物品');
+}
 
 function itemCardHTML(i) {
   var d = i.expireDate ? daysUntil(i.expireDate) : null;
-  var h = '<div class="item-card" onclick="openItemDetail(\'' + i.id + '\')">';
+  var selected = !!itemSelected[i.id];
+  var action = itemSelectMode ? ('toggleItemSelect(\'' + i.id + '\')') : ('openItemDetail(\'' + i.id + '\')');
+  var h = '<div class="item-card' + (itemSelectMode ? ' selectable' : '') + (selected ? ' selected' : '') + '" data-id="' + esc(i.id) + '" onclick="' + action + '">';
+  if (itemSelectMode) h += '<span class="select-mark" aria-hidden="true"></span>';
   h += '<div class="pic">' + fallbackIcon(i) + '</div>';
   h += '<div class="meta">';
   h += '<div class="name">' + esc(i.name) + '</div>';
@@ -430,11 +494,20 @@ function expiryGroups() {
 
 function renderExpiry() {
   var g = expiryGroups();
+  var calItems = calendarReminderItems();
   var html = '<div class="card" style="padding:12px">';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
   html += '<div><b style="font-size:16px">保质期提醒</b><div class="muted">临期分级 · 及时处理不浪费</div></div>';
+  html += '<div class="actions" style="margin:0">';
   html += '<button class="btn btn-primary btn-sm" onclick="openCapture(\'expiry\')">扫描包装</button>';
+  html += '<button class="btn btn-ghost btn-sm" onclick="goBatchItems()">批量清理</button>';
+  html += '</div>';
   html += '</div></div>';
+
+  html += '<div class="calendar-card">';
+  html += '<div><div class="cal-title">日历提醒</div><div class="muted">' + (calItems.length ? ('把 ' + calItems.length + ' 件临期物品加入系统日历，到期前 3 天和 1 天提醒') : ('未来 ' + CALENDAR_DAYS + ' 天内暂无需要加入日历的物品')) + '</div></div>';
+  html += '<button class="btn btn-primary btn-sm" onclick="openCalendarReminder()"' + (calItems.length ? '' : ' disabled') + '>添加到日历' + (calItems.length ? '（' + calItems.length + '）' : '') + '</button>';
+  html += '</div>';
 
   var groups = [
     { key: 'expired', title: '已过期', dot: 'red' },
@@ -543,7 +616,7 @@ function openItemForm(item) {
   html += '</select></div>';
   html += '<div class="field"><label>到期日</label><input id="f_expire" type="date" value="' + esc(it.expireDate || '') + '" /></div>';
   html += '</div>';
-  html += '<label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)"><input type="checkbox" id="f_remind" checked /> 启用到期提醒</label>';
+  html += '<label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)"><input type="checkbox" id="f_remind"' + (it.remind !== false ? ' checked' : '') + ' /> 启用到期提醒并允许加入日历</label>';
   html += '</div>';
 
   html += '<div style="display:flex;gap:10px;margin-top:6px">';
@@ -573,7 +646,8 @@ function saveItemForm() {
     location: ($('#f_loc').value || '').trim() || '未设置位置',
     note: ($('#f_note').value || '').trim(),
     storage: isFood ? $('#f_storage').value : '',
-    expireDate: isFood ? ($('#f_expire').value || '') : ''
+    expireDate: isFood ? ($('#f_expire').value || '') : '',
+    remind: isFood ? !!($('#f_remind') && $('#f_remind').checked) : false
   };
   var idInput = $('#f_id');
   var existingId = idInput ? idInput.value : null;
@@ -601,6 +675,127 @@ function deleteItem(id) {
   DB.items = DB.items.filter(function (i) { return i.id !== id; });
   saveDB(); closeModal(); render();
   toast('已删除');
+}
+
+/* ---------- 日历提醒：导出标准 ICS，由系统日历确认导入 ---------- */
+function calendarReminderItems() {
+  return activeItems().filter(function (i) {
+    if (!i.expireDate || i.remind === false) return false;
+    var d = daysUntil(i.expireDate);
+    return d !== null && d >= 0 && d <= CALENDAR_DAYS;
+  }).sort(function (a, b) {
+    return daysUntil(a.expireDate) - daysUntil(b.expireDate);
+  });
+}
+
+function icsPad(n) { return String(n).length < 2 ? '0' + n : String(n); }
+function icsDate(dateISO) { return String(dateISO || '').replace(/-/g, ''); }
+function icsStamp(date) {
+  var d = date || new Date();
+  return d.getUTCFullYear() + icsPad(d.getUTCMonth() + 1) + icsPad(d.getUTCDate()) + 'T' + icsPad(d.getUTCHours()) + icsPad(d.getUTCMinutes()) + icsPad(d.getUTCSeconds()) + 'Z';
+}
+function icsEscape(s) {
+  return String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
+}
+function icsFold(line) {
+  var s = String(line), out = '';
+  while (s.length > 73) { out += s.slice(0, 73) + '\r\n '; s = s.slice(73); }
+  return out + s;
+}
+function buildExpiryICS(items) {
+  var lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Wuxu//Expiry Reminder//CN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:物序 · 临期提醒',
+    'X-WR-TIMEZONE:Asia/Shanghai'
+  ];
+  var now = icsStamp(new Date());
+  items.forEach(function (i) {
+    var d = daysUntil(i.expireDate);
+    var compact = icsDate(i.expireDate);
+    var desc = ['到期日：' + i.expireDate, fmt(d), i.location ? ('位置：' + i.location) : '', i.storage ? ('保存：' + i.storage) : ''].filter(Boolean).join('\n');
+    var uid = String(i.id || uid()).replace(/[^A-Za-z0-9_-]/g, '') + '@wuxu';
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:' + uid);
+    lines.push('DTSTAMP:' + now);
+    lines.push('DTSTART:' + compact + 'T010000Z');
+    lines.push('DTEND:' + compact + 'T013000Z');
+    lines.push('SUMMARY:' + icsEscape('物序：' + i.name + ' 到期'));
+    lines.push('DESCRIPTION:' + icsEscape(desc));
+    lines.push('LOCATION:' + icsEscape(i.location || ''));
+    lines.push('CATEGORIES:' + icsEscape('物序,保质期'));
+    lines.push('STATUS:CONFIRMED');
+    lines.push('TRANSP:OPAQUE');
+    lines.push('BEGIN:VALARM');
+    lines.push('TRIGGER:-P3D');
+    lines.push('ACTION:DISPLAY');
+    lines.push('DESCRIPTION:' + icsEscape('物序：' + i.name + ' 还有 3 天到期'));
+    lines.push('END:VALARM');
+    lines.push('BEGIN:VALARM');
+    lines.push('TRIGGER:-P1D');
+    lines.push('ACTION:DISPLAY');
+    lines.push('DESCRIPTION:' + icsEscape('物序：' + i.name + ' 明天到期'));
+    lines.push('END:VALARM');
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return '\ufeff' + lines.map(icsFold).join('\r\n') + '\r\n';
+}
+function downloadICS(ics, filename) {
+  var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 1500);
+  closeModal();
+  toast('日历文件已生成，请在系统日历中确认导入');
+}
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+}
+function exportExpiryCalendar() {
+  var items = calendarReminderItems();
+  if (!items.length) { toast('未来 ' + CALENDAR_DAYS + ' 天内没有需要提醒的物品'); return; }
+  var ics = buildExpiryICS(items);
+  var filename = 'wuxu-expiry-' + todayISO().replace(/-/g, '') + '.ics';
+  try {
+    if (isMobileDevice() && navigator.share && navigator.canShare && typeof File !== 'undefined') {
+      var file = new File([ics], filename, { type: 'text/calendar' });
+      if (navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: '物序临期提醒' }).then(function () {
+          closeModal();
+          toast('请在系统日历中确认导入');
+        }).catch(function (e) {
+          if (e && e.name === 'AbortError') return;
+          downloadICS(ics, filename);
+        });
+        return;
+      }
+    }
+  } catch (e) { /* 回退到下载 */ }
+  downloadICS(ics, filename);
+}
+function openCalendarReminder() {
+  var items = calendarReminderItems();
+  var html = modalHead('添加到系统日历');
+  html += '<div class="calendar-guide">';
+  html += '<p>网页版无法直接读写系统日历。点击下方按钮会生成标准日历文件，由手机或电脑的系统日历确认导入。</p>';
+  html += '<p>将创建 ' + items.length + ' 个日历事件，每件物品在到期前 3 天和 1 天提醒。</p>';
+  if (!items.length) html += '<p class="muted">未来 ' + CALENDAR_DAYS + ' 天内没有需要提醒的物品。</p>';
+  html += '</div>';
+  html += '<button class="btn btn-primary btn-block" onclick="exportExpiryCalendar()"' + (items.length ? '' : ' disabled') + '>生成日历文件</button>';
+  openModal(html, true);
 }
 
 function openItemDetail(id) {

@@ -375,7 +375,7 @@ function saveItemConfirm() {
       count: Math.max(1, parseInt(row.querySelector('.ccount').value, 10) || 1),
       location: (row.querySelector('.cloc').value || '').trim() || '未设置位置',
       note: (row.querySelector('.cnote').value || '').trim(),
-      createdAt: todayISO(), expireDate: '', storage: ''
+      createdAt: todayISO(), expireDate: '', storage: '', remind: false
     });
     added++;
   });
@@ -419,7 +419,7 @@ function saveExpiryConfirm() {
     count: Math.max(1, parseInt($('#ex_count').value, 10) || 1),
     location: kind === 'medicine' ? '药箱' : '冰箱·冷藏层',
     storage: $('#ex_storage').value,
-    expireDate: expire, note: '', createdAt: todayISO()
+    expireDate: expire, note: '', createdAt: todayISO(), remind: true
   });
   saveDB(); closeModal(); go('expiry'); toast('已保存并开启到期提醒');
 }

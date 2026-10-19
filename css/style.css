@@ -1029,4 +1029,100 @@ body {
 .meal-head svg,
 .nav-item span svg {
   fill: currentColor;
+}/* =========================================================
+   批量管理与日历提醒
+   ========================================================= */
+.item-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.item-toolbar .btn { flex: 1; }
+.batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #0d2744;
+  border: 2px solid var(--brand);
+  box-shadow: var(--shadow);
+}
+.batch-count {
+  color: var(--brand);
+  font-family: var(--pixel);
+  letter-spacing: .5px;
+}
+.batch-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.item-card.selectable {
+  position: relative;
+  padding-left: 44px;
+  user-select: none;
+}
+.item-card.selected {
+  border-color: var(--brand) !important;
+  background: #164a78 !important;
+  box-shadow: 0 0 0 2px rgba(122,244,255,.18), var(--shadow);
+}
+.select-mark {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  border: 2px solid var(--line-bright);
+  background: #071426;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #071426;
+  font-family: var(--pixel);
+  font-size: 14px;
+  font-weight: 900;
+}
+.item-card.selected .select-mark {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.item-card.selected .select-mark::after { content: "✓"; }
+.calendar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: #0d2744 !important;
+  border: 2px solid var(--brand);
+  box-shadow: var(--shadow);
+}
+.calendar-card .cal-title {
+  color: var(--brand);
+  font-family: var(--pixel);
+  font-size: 14px;
+  letter-spacing: .5px;
+  margin-bottom: 2px;
+}
+.calendar-guide {
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.calendar-guide p { margin-bottom: 8px; }
+@media (max-width: 620px) {
+  .item-toolbar { flex-direction: column; }
+  .batch-bar { align-items: stretch; }
+  .batch-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .batch-actions .btn { width: 100%; }
+  .batch-actions .btn-danger { grid-column: 1 / -1; }
+  .calendar-card { flex-direction: column; align-items: stretch; }
+  .calendar-card .btn { width: 100%; }
 }
