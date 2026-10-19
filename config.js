@@ -7,8 +7,8 @@
    （anon key 用于客户端公开访问，安全由数据库行级策略 RLS 保护）
    ========================================================= */
 window.APP_CONFIG = {
-  SUPABASE_URL: 'https://ncjbczhjfitphqzxwozj.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_zCIELwLQ4-eXyBUk8dqkcQ_wx-RoQUS',
+  SUPABASE_URL: 'https://nehqecfyvkybahpopxck.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_JPzKdo6iLMg90cUIjFs96g_6Sv4Xpa5',
   // 可选：Cloudflare Worker 的地址（填了就优先用它做 AI 代理；留空则用 Supabase Edge Function）
   AI_ENDPOINT: ''
 };

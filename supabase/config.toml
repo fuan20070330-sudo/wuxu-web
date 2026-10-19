@@ -1,0 +1,11 @@
+project_id = "wuxu"
+
+[auth]
+site_url = "https://fuan20070330-sudo.github.io/wuxu-web/"
+additional_redirect_urls = ["https://fuan20070330-sudo.github.io/wuxu-web/**", "http://127.0.0.1:8896/**", "http://localhost:8896/**"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+max_frequency = "1s"
+otp_length = 6
