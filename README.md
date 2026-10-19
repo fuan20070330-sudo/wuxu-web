@@ -59,7 +59,9 @@ web/
 
 ## WebSocket 实时同步
 - 登录后自动建立 WebSocket 长连接（Supabase Realtime），其他设备改动会实时推送到本机并自动刷新；
-- 断线自动重连（8 秒），不可用时降级为 30 秒轮询兜底；界面在“我的 → 账号与云同步”显示连接状态；
+- 断线自动重连（8 秒），不可用时降级为 30 秒轮询兜底；界面在“设置 → 账号与云同步”显示连接状态；
+- 登录令牌到期后自动刷新；短暂网络故障不会清除本地登录状态，恢复网络后可继续同步；
+- GitHub Actions 每两天访问一次 Supabase REST 接口，避免免费项目因长期无活动自动暂停；
 - 需要在 Supabase 执行一次 `alter publication supabase_realtime add table public.user_data;`，详见根目录 `docs/10_WebSocket实时同步说明.md`。
 
 ## 真实 AI 识别（视觉大模型 / OCR）

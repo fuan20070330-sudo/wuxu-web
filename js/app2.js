@@ -532,6 +532,15 @@ window.addEventListener('hashchange', render);
 if (!location.hash) history.replaceState(null, '', '#home');
 render();
 cloudAuto();
+window.addEventListener('online', function () {
+  if (typeof Cloud !== 'undefined' && Cloud.isReady && Cloud.isLoggedIn()) {
+    if (typeof toast === 'function') toast('网络已恢复，正在同步云端数据');
+    cloudSyncNow(false);
+  }
+});
+window.addEventListener('offline', function () {
+  if (typeof toast === 'function') toast('网络已断开，当前使用本地数据');
+});
 
 
 
@@ -617,6 +626,7 @@ function cloudSyncNow(showToast) {
     if (!res.ok) {
       if (res.reason === 'noauth') toast('登录已失效，请重新登录');
       else if (res.reason === 'noconfig') toast('云端未配置');
+      else if (res.reason === 'offline') toast('云端暂不可达，已保留登录状态，本地数据不受影响');
       return;
     }
     render();
@@ -646,7 +656,7 @@ function friendlyErr(prefix, e) {
   if (low.indexOf('not confirmed') >= 0) return prefix + '该邮箱尚未确认：请到邮箱点确认链接，或到 Supabase 关闭邮箱验证';
   if (low.indexOf('invalid login credentials') >= 0 || low.indexOf('invalid credentials') >= 0) return prefix + '邮箱或密码不正确';
   if (low.indexOf('user already registered') >= 0) return prefix + '该邮箱已注册，请直接登录';
-  if (low.indexOf('failed to fetch') >= 0 || low.indexOf('network') >= 0 || low.indexOf('fetch') >= 0) return prefix + '网络异常：请确认能访问 supabase.co 后重试';
+  if (low.indexOf('failed to fetch') >= 0 || low.indexOf('network') >= 0 || low.indexOf('fetch') >= 0) return prefix + '云端暂不可达，请稍后重试；本地数据不会丢失';
   return prefix + (msg || '未知错误');
 }
 

@@ -1,0 +1,35 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: "17 2 */2 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query Supabase REST endpoint
+        env:
+          SUPABASE_URL: https://ncjbczhjfitphqzxwozj.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jamJjemhqZml0cGhxenh3b3pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MDM5MjUsImV4cCI6MjEwNDI3OTkyNX0.8QbfmQxQbEV-vu-Gz772wsZnoSId9RynjJwKZudzNyo
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o /tmp/supabase-ping.json -w "%{http_code}" --max-time 30 \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              "${SUPABASE_URL}/rest/v1/user_data?select=user_id&limit=1" || true)
+            echo "attempt ${attempt}: HTTP ${code}"
+            if [ "${code}" = "200" ]; then
+              cat /tmp/supabase-ping.json
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1

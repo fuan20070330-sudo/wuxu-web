@@ -80,6 +80,36 @@ window.Cloud = (function () {
     return !!(a && a.access_token && a.email);
   }
   function currentEmail() { var a = readAuth(); return a ? (a.email || '') : ''; }
+  function sessionExpiresAt(data) {
+    if (data && data.expires_at) return Number(data.expires_at);
+    if (data && data.expires_in) return Math.floor(Date.now() / 1000) + Number(data.expires_in);
+    return null;
+  }
+  function rememberUser(a, u) {
+    if (!a || !u) return;
+    var next = {
+      access_token: a.access_token,
+      refresh_token: a.refresh_token || '',
+      email: u.email || a.email || '',
+      uid: u.id || a.uid || '',
+      expires_at: a.expires_at || null,
+      updated_at: new Date().toISOString()
+    };
+    writeAuth(next);
+  }
+  function offlineSession(a) {
+    return { offline: true, token: '', email: (a && a.email) || '', user: { id: (a && a.uid) || '' } };
+  }
+  function isTransientError(err) {
+    if (!err) return true;
+    if (err.offline || err.timeout) return true;
+    if (!err.status) return true;
+    return err.status === 429 || err.status >= 500;
+  }
+  function sessionNeedsRefresh(a) {
+    var exp = Number(a && a.expires_at);
+    return !!(exp && exp <= (Math.floor(Date.now() / 1000) + 60));
+  }
 
   /* ---------- 认证 ---------- */
   function signUp(email, password) {
@@ -100,6 +130,8 @@ window.Cloud = (function () {
         access_token: data.access_token,
         refresh_token: data.refresh_token || '',
         email: (data.user && data.user.email) || email,
+        uid: (data.user && data.user.id) || '',
+        expires_at: sessionExpiresAt(data),
         updated_at: new Date().toISOString()
       });
       return data;
@@ -114,7 +146,10 @@ window.Cloud = (function () {
       writeAuth({
         access_token: data.access_token,
         refresh_token: data.refresh_token || a.refresh_token,
-        email: a.email, updated_at: new Date().toISOString()
+        email: (data.user && data.user.email) || a.email,
+        uid: (data.user && data.user.id) || a.uid || '',
+        expires_at: sessionExpiresAt(data),
+        updated_at: new Date().toISOString()
       });
       return data.access_token;
     });
@@ -122,23 +157,43 @@ window.Cloud = (function () {
   function me(token) {
     return http(base() + '/auth/v1/user', { headers: authHdrs(token) });
   }
-  /* 返回 {user, token} 或 null（未登录/失效） */
+  /* 返回 {user, token}、{offline:true} 或 null（未登录/失效） */
+  function verifySession(a) {
+    return me(a.access_token).then(function (u) {
+      rememberUser(a, u);
+      return { user: u, token: a.access_token, email: u.email || a.email || '' };
+    });
+  }
+  function refreshSession(a) {
+    return refresh(a).then(function (tk) {
+      var b = readAuth() || a;
+      return me(tk).then(function (u) {
+        rememberUser(b, u);
+        return { user: u, token: tk, email: u.email || b.email || '' };
+      });
+    });
+  }
   function ensureSession() {
     var a = readAuth();
     if (!a || !a.access_token) return Promise.resolve(null);
-    return me(a.access_token).then(function (u) {
-      return { user: u, token: a.access_token };
+    var first = (sessionNeedsRefresh(a) && a.refresh_token) ? refreshSession(a) : verifySession(a);
+    return first.catch(function (err) {
+      if (err && err.status === 401 && a.refresh_token) return refreshSession(a);
+      throw err;
     }).catch(function (err) {
-      if (err.status === 401 && a.refresh_token) {
-        return refresh(a).then(function (tk) {
-          return me(tk).then(function (u) { return { user: u, token: tk }; });
-        }).catch(function () { writeAuth(null); return null; });
-      }
+      if (isTransientError(err)) return offlineSession(a);
       writeAuth(null);
       return null;
     });
   }
-  function getAccessToken() { var a = readAuth(); return a ? (a.access_token || '') : ''; }
+  function validToken() {
+    var a = readAuth();
+    if (!a || !a.access_token) return Promise.resolve('');
+    if (a.expires_at && !sessionNeedsRefresh(a)) return Promise.resolve(a.access_token);
+    return ensureSession().then(function (sess) {
+      return (sess && !sess.offline && sess.token) ? sess.token : '';
+    }).catch(function () { return ''; });
+  }  function getAccessToken() { var a = readAuth(); return a ? (a.access_token || '') : ''; }
   function signOut() { stopRealtime(); writeAuth(null); return Promise.resolve(); }
 
   /* ---------- 云数据（表 user_data，RLS 只允许本人读写） ---------- */
@@ -171,6 +226,7 @@ window.Cloud = (function () {
     if (!isReady()) return Promise.resolve({ ok: false, reason: 'noconfig' });
     return ensureSession().then(function (sess) {
       if (!sess) return { ok: false, reason: 'noauth' };
+      if (sess.offline) return { ok: false, reason: 'offline' };
       var uid = sess.user.id;
       ensureMeta();
       var localDirty = !!DB.meta.dirty;
@@ -234,6 +290,7 @@ window.Cloud = (function () {
     wsState = 'connecting';
     ensureSession().then(function (sess) {
       if (!sess) { wsState = 'idle'; return; }
+      if (sess.offline) { startFallback('云端暂不可达'); return; }
       wsUid = sess.user.id; wsToken = sess.token;
       try { ws = new WebSocket(realtimeUrl()); } catch (e) { startFallback(e.message); return; }
       ws.onopen = function () {
@@ -324,6 +381,8 @@ window.Cloud = (function () {
     isLoggedIn: isLoggedIn,
     currentEmail: currentEmail,
     getAccessToken: getAccessToken,
+    validToken: validToken,
+    ensureSession: ensureSession,
     signUp: signUp,
     signIn: signIn,
     signOut: signOut,

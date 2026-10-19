@@ -42,24 +42,26 @@ window.AI = (function () {
       ? (intent === 'expiry' ? { side: 2240, q: 0.95 } : (intent === 'item' ? { side: 1920, q: 0.92 } : { side: 1600, q: 0.88 }))
       : (intent === 'expiry' ? { side: 1920, q: 0.92 } : (intent === 'item' ? { side: 1440, q: 0.85 } : { side: 1280, q: 0.8 }));
     return compress(dataUrl, q.side, q.q).then(function (img) {
-      var t = token();
-      /* 已登录请求不发送 x-zhiwu-client；兼容尚未更新 CORS 白名单的服务端。体验模式仍发送该标识。 */
-      var headers = { 'Content-Type': 'application/json', 'apikey': CFG().SUPABASE_ANON_KEY };
-      if (!t) headers['x-zhiwu-client'] = 'web';
-      headers['Authorization'] = 'Bearer ' + (t || CFG().SUPABASE_ANON_KEY);
-      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timer = setTimeout(function () { try { if (ctrl) ctrl.abort(); } catch (e) { /* ignore */ } }, 40000);
-      var opt = { method: 'POST', headers: headers, body: JSON.stringify({ intent: intent, image: img, precise: precise }) };
-      if (ctrl) opt.signal = ctrl.signal;
-      return fetch(endpoint(), opt).catch(function (err) {
-        if (err && (err.name === 'AbortError' || /aborted/i.test(err.message || ''))) {
-          throw new Error('识别超时：网络较慢，请重试或改用更小的照片');
-        }
-        if (err && err.name === 'TypeError') {
-          throw new Error('网络或跨域请求失败：请刷新页面后重试；若仍未恢复，请重新登录后再使用识别');
-        }
-        throw err;
-      }).then(function (r) { clearTimeout(timer); return r; }, function (e) { clearTimeout(timer); throw e; });
+      var tokenPromise = (window.Cloud && Cloud.validToken) ? Cloud.validToken() : Promise.resolve(token());
+      return tokenPromise.then(function (t) {
+        /* 已登录请求不发送 x-zhiwu-client；兼容尚未更新 CORS 白名单的服务端。体验模式仍发送该标识。 */
+        var headers = { 'Content-Type': 'application/json', 'apikey': CFG().SUPABASE_ANON_KEY };
+        if (!t) headers['x-zhiwu-client'] = 'web';
+        headers['Authorization'] = 'Bearer ' + (t || CFG().SUPABASE_ANON_KEY);
+        var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timer = setTimeout(function () { try { if (ctrl) ctrl.abort(); } catch (e) { /* ignore */ } }, 40000);
+        var opt = { method: 'POST', headers: headers, body: JSON.stringify({ intent: intent, image: img, precise: precise }) };
+        if (ctrl) opt.signal = ctrl.signal;
+        return fetch(endpoint(), opt).catch(function (err) {
+          if (err && (err.name === 'AbortError' || /aborted/i.test(err.message || ''))) {
+            throw new Error('识别超时：网络较慢，请重试或改用更小的照片');
+          }
+          if (err && err.name === 'TypeError') {
+            throw new Error('网络或跨域请求失败：请刷新页面后重试；若仍未恢复，请重新登录后再使用识别');
+          }
+          throw err;
+        }).then(function (r) { clearTimeout(timer); return r; }, function (e) { clearTimeout(timer); throw e; });
+      });
     }).then(function (r) {
       return r.text().then(function (txt) {
         var d = null;
